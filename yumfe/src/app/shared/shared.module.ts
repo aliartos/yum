@@ -17,7 +17,8 @@ import { ControlUserService } from './services/control-user.service';
 import { BalanceService } from './services/balance.service';
 import { DeletePictureDialog } from './profile/profile.component';
 import { ProfileModule } from '../shared/profile/profile.module';
-
+import { WebsocketService} from './websocket/websocket.service';
+import { CommService } from './websocket/comm.service';
 @NgModule({
   imports: [
     CommonModule,
@@ -55,7 +56,9 @@ import { ProfileModule } from '../shared/profile/profile.module';
     GlobalSettingsService,
     LowerCasePipe,
     ControlUserService,
-    BalanceService
+    BalanceService,
+    WebsocketService,
+    CommService
   ],
   entryComponents: [DeletePictureDialog]
 })

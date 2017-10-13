@@ -18,7 +18,7 @@ import { AppRouting } from './app.routing';
 
 import { CalendarModule } from 'angular-calendar';
 import { ProfileComponent } from './profile/profile.component';
-import { BASE_PATH } from './remote/variables';
+import { BASE_PATH, WS_BASE_PATH } from './remote/variables';
 import { AppRouteGuard } from './app-route.guard';
 import { AppExtAuthRouteGuard } from './app-extAuth-route.guard';
 import { SettingsRouteGuard } from './shared/settings/settings-route.guard';
@@ -60,6 +60,7 @@ import { AuthenticationService } from './shared/authentication.service';
   providers: [
     AuthApi, AdminApi,
     { provide: BASE_PATH, useValue: environment.base_path },
+    { provide: WS_BASE_PATH, useValue: environment.ws_base_path },
     AppRouteGuard,
     AppExtAuthRouteGuard,
     SettingsRouteGuard,

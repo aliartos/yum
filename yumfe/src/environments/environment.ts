@@ -5,5 +5,7 @@
 
 export const environment = {
   production: false,
-  base_path: 'http://localhost:8080/api' 
+  base_path: 'http://localhost:8080/api',
+  ws_base_path : 'ws://localhost:8080/ws',
+
 };
