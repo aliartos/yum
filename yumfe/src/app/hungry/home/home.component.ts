@@ -5,7 +5,7 @@ import { ActivatedRoute, Params } from '@angular/router';
 import { Location } from '@angular/common';
 import * as remote from '../../remote';
 import { DatePipe } from '@angular/common';
-import { MdTooltip } from '@angular/material';
+import { MatTooltip } from '@angular/material';
 import { MonthNavComponent } from '../../shared/header/month-nav/month-nav.component';
 import { GlobalSettingsService } from '../../shared/services/global-settings-service.service';
 import { Observable, Subject } from 'rxjs/Rx';
@@ -66,7 +66,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   public weeklyTotalPrice = 0;
   public workingDays: number[];
   private observable: any
-  //admin 
+  //admin
   public controlledUser: remote.User;
 
   constructor(
@@ -89,7 +89,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     // .zip(this.globalSettingsService.getWorkingDays(), this.controlUserService.getUser(), (wdays: any, controlledUser: any) => {
     //    return { wdays: wdays, controlledUser: controlledUser } })
     // .subscribe((r:observables) => {
-    //   this.workingDays = r.wdays; 
+    //   this.workingDays = r.wdays;
     //   this.controlledUser = r.controlledUser;
     //   console.log("Controlled user:", r.controlledUser);
     //   this.setup();
