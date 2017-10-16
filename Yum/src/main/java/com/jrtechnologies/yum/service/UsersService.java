@@ -23,6 +23,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.transaction.Transactional;
 import com.jrtechnologies.ApplicationProperties;
+import com.jrtechnologies.YumWebSocketHandler;
 import com.jrtechnologies.yum.api.ApiException;
 import com.jrtechnologies.yum.api.ConcurrentModificationException;
 import com.jrtechnologies.yum.api.model.LastEdit;
@@ -74,6 +75,7 @@ public class UsersService {
     private ApplicationProperties applicationProperties;
     @Autowired
     HolidaysRepository holidaysRepo;
+     
     
     private static final Logger LOGGER = Logger.getLogger(UsersService.class.getName());
 
@@ -420,5 +422,6 @@ public class UsersService {
         // Check if order deadline passed based on given date, deadlineDays and deadlineTime (deadline)
         return (date.toLocalDateTime(deadlineTime).compareTo(LocalDateTime.now()) < 0);
     }
+    
 }
  

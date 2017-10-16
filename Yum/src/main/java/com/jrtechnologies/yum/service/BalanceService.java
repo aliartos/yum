@@ -14,6 +14,7 @@
  */
 package com.jrtechnologies.yum.service;
 
+import com.jrtechnologies.aspects.BalanceChanged;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import javax.transaction.Transactional;
@@ -36,7 +37,7 @@ public class BalanceService {
     private UserRepository userRep;
     
     @Autowired
-    private TransactionRepository transactionRep;
+    TransactionsService transService;
     
     public BigDecimal balanceIdGet(Long id) throws ApiException {
         
@@ -80,18 +81,13 @@ public class BalanceService {
         if (balance.compareTo(deposit.getBalance())!=0){
             throw new ConcurrentModificationException(409, "Concurrent modification error.", balance);
         }
-        Transaction transaction = new Transaction();
-        transaction.setUserId(id);
-        transaction.setAmount(amount);
-        
+         
         balance = balance.add(amount);
-        transaction.setBalance(balance);
+        
+        transService.saveNewTransaction(id, amount, balance, (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal(), null, null, 0);
+       
         user.setBalance(balance);
-        
-        
-         //Retrieves source user id form token
-        transaction.setSourceId((Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
-        transactionRep.save(transaction);
+          
         return balance;
     }
 }

@@ -2,6 +2,7 @@ import { Component, OnInit, Input, Inject, Output, EventEmitter } from '@angular
 import { FormBuilder, FormGroup, FormControl, Validators } from '@angular/forms';
 import { MatSnackBar, MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { GlobalSettingsService } from '../../shared/services/global-settings-service.service';
+import { DecimalPipe } from '@angular/common';
 
 import * as remote from '../../remote';
 import { Observable } from 'rxjs/Rx';

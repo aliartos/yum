@@ -14,13 +14,17 @@
  */
 package com.jrtechnologies.yum.service;
 
+import com.jrtechnologies.YumWebSocketHandler;
+import com.jrtechnologies.aspects.BalanceChanged;
 import java.util.ArrayList;
 import java.util.List;
 import com.jrtechnologies.yum.api.ApiException;
 import com.jrtechnologies.yum.api.model.Transaction;
 import com.jrtechnologies.yum.data.entity.User;
 import com.jrtechnologies.yum.data.entity.DailyMenu;
+import com.jrtechnologies.yum.data.repository.TransactionRepository;
 import com.jrtechnologies.yum.data.repository.UserRepository;
+import java.math.BigDecimal;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -30,7 +34,11 @@ import org.springframework.stereotype.Service;
 public class TransactionsService {
     
     @Autowired
+    private TransactionRepository transactionRep;
+    
+    @Autowired
     private UserRepository userRep;
+
     
     public List<Transaction> transactionsIdGet(Long id) throws ApiException {
         
@@ -85,5 +93,12 @@ public class TransactionsService {
             transactions.add(transaction);
         }        
         return transactions;
+    }
+    
+    @BalanceChanged
+    public void saveNewTransaction(long userId, BigDecimal amount, BigDecimal balance, long sourceId, Long orderId, Long menuId, int orderType){
+         
+        com.jrtechnologies.yum.data.entity.Transaction transaction = new com.jrtechnologies.yum.data.entity.Transaction(userId, amount, balance, sourceId, orderId, menuId, orderType);
+        transactionRep.save(transaction);
     }
 }

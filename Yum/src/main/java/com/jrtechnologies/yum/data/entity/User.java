@@ -14,6 +14,7 @@
  */
 package com.jrtechnologies.yum.data.entity;
 
+import com.jrtechnologies.aspects.BalanceChanged;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
@@ -34,6 +35,9 @@ import com.jrtechnologies.yum.data.converter.LocalDateAttributeConverter;
 import com.jrtechnologies.yum.data.converter.LocalDateTimeAttributeConverter;
 import com.jrtechnologies.yum.data.converter.UserRoleConverter;
 import com.jrtechnologies.yum.data.enums.UserRole;
+import javax.persistence.PostUpdate;
+import javax.persistence.PreUpdate;
+import javax.persistence.Transient;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 import org.joda.time.LocalTime;
@@ -105,6 +109,18 @@ public class User {
     private BigDecimal balance;
     
     public User() {
+    }
+
+    @Transient
+    private BigDecimal lastBalance;
+     
+    @PostUpdate 
+    public void methodInvokedAfterUpdate() { 
+        
+        //System.out.println("New balance:" + balance);
+        if(!balance.equals(lastBalance)){
+            //sendBalanceToUser
+        }
     }
 
     //Use for mockups
@@ -325,6 +341,7 @@ public class User {
         return balance;
     }
 
+    
     public void setBalance(BigDecimal balance) {
         this.balance = balance;
     }

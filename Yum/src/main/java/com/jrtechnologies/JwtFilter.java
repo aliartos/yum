@@ -63,6 +63,7 @@ public class JwtFilter extends GenericFilterBean  {
         final HttpServletResponse response = (HttpServletResponse) res;
 
         if (request.getRequestURI().startsWith(allow) && !request.getRequestURI().startsWith(reject)
+                && !request.getRequestURI().startsWith("/ws") 
                 && !request.getRequestURI().startsWith("/api/swagger-ui") && !request.getRequestURI().equals("/api") 
                 && !request.getRequestURI().startsWith("/api/settings/picture/token")
                 && !request.getRequestURI().matches("\\/api\\/users\\/\\d+\\/picture\\/token(.)*") 
