@@ -51,12 +51,12 @@ public class RefreshTokenService {
         if (balance==null){
             balance = new BigDecimal(0); 
         }
-        System.out.println("token: " + token);
-        System.out.println("balance: " + balance);
+        //System.out.println("token: " + token);
+        //System.out.println("balance: " + balance);
         Refresh refresh = new Refresh();
         refresh.setToken(token);
         refresh.setBalance(balance);
-        System.out.println("refresh: " + refresh);
+        //System.out.println("refresh: " + refresh);
         return refresh; 
     }
 }

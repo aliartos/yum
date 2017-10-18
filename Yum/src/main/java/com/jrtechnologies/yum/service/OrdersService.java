@@ -71,7 +71,7 @@ public class OrdersService {
     @Autowired
     HolidaysRepository holidaysRepo;
     @Autowired
-    private TransactionRepository transactionRep;
+    TransactionsService transService;
 
     @Transactional
     public DailyMenu ordersPost(Order order, Long reqUserId) throws ApiException {
@@ -202,9 +202,8 @@ public class OrdersService {
 
         dailyOrderRep.save(dailyOrderEntity);
         user.setBalance(balance);
-        Transaction transaction = new Transaction(userId, orderAmount, balance, sourceUser.getId(),
-                dailyOrderEntity.getDailyOrderId(), dailyMenuId, 1);
-        transactionRep.save(transaction);
+        transService.saveNewTransaction(userId, orderAmount, balance, sourceUser.getId(),
+                dailyOrderEntity.getDailyOrderId(), dailyMenuId, 1); 
 
         List<FoodWithQuantity> foodsWQ = dailyMenu.getFoods();
         for (com.jrtechnologies.yum.data.entity.Food food : dailyMenuEntity.getFoods()) {
@@ -460,9 +459,8 @@ public class OrdersService {
                 orderUpdate.setBalance(balance);
                 orderUpdate.setLastEdit(lastEdit);
 
-                Transaction transaction = new Transaction(user.getId(), orderAmount, balance, sourceUser.getId(),
-                        dailyOrderEntity.getDailyOrderId(), dailyMenuEntity.getId(), 2);
-                transactionRep.save(transaction);
+                transService.saveNewTransaction(user.getId(), orderAmount, balance, sourceUser.getId(),
+                        dailyOrderEntity.getDailyOrderId(), dailyMenuEntity.getId(), 2); 
 
                 // If user requested email confirmation the email service is injected  
                 if (updateOrderItems.getEmailRequest() && (emailService != null)) {
@@ -521,9 +519,8 @@ public class OrdersService {
             OrderUpdate orderUpdate = new OrderUpdate();
             orderUpdate.setBalance(balance);
 
-            Transaction transaction = new Transaction(user.getId(), orderAmount, balance, sourceUser.getId(),
-                    dailyOrderEntity.getDailyOrderId(), dailyMenuEntity.getId(), 3);
-            transactionRep.save(transaction);
+            transService.saveNewTransaction(user.getId(), orderAmount, balance, sourceUser.getId(),
+                    dailyOrderEntity.getDailyOrderId(), dailyMenuEntity.getId(), 3); 
             dailyOrderRep.delete(dailyOrderEntity);
             return orderUpdate;
         }

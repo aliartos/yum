@@ -15,7 +15,7 @@
 package com.jrtechnologies.yum.api.model;
  
 public class WebSocketMessage {
-    private String command;
+    private String command; //ERROR, BALANCE, 
     private String origin;
     private String message;
     private String token; 
