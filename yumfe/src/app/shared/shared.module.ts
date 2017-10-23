@@ -19,6 +19,8 @@ import { DeletePictureDialog } from './profile/profile.component';
 import { ProfileModule } from '../shared/profile/profile.module';
 import { WebsocketService} from './websocket/websocket.service';
 import { CommService } from './websocket/comm.service';
+import { FoodsService } from './services/foods.service';
+
 @NgModule({
   imports: [
     CommonModule,
@@ -58,7 +60,8 @@ import { CommService } from './websocket/comm.service';
     ControlUserService,
     BalanceService,
     WebsocketService,
-    CommService
+    CommService,
+    FoodsService
   ],
   entryComponents: [DeletePictureDialog]
 })
