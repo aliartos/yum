@@ -21,7 +21,7 @@ info:
       
     ------------------------------------
 
-        Last edit: 28/09/2017 10:00
+        Last edit: 27/10/2017 11:00
 
     -------------------------------------
 basePath: /api
@@ -170,12 +170,12 @@ paths:
         - hungry
       description: get refreshed token
       produces:
-        - text/plain
+        - application/json
       responses:
         '200':
           description: refreshed token string
           schema:
-            type: string
+            $ref: '#/definitions/Refresh'
         '500':
           $ref: '#/responses/Error'
   /settings:
@@ -204,7 +204,7 @@ paths:
           description: User data
           required: true
           schema:
-            $ref: '#/definitions/UserSettings'
+            $ref: '#/definitions/Settings'
       responses:
         '200':
           description: User data changed successfully
@@ -215,9 +215,7 @@ paths:
         '409':
           description: Concurrent modification error
           schema:
-            $ref: '#/definitions/User'
-        '412':
-          description: User email exists
+            $ref: '#/definitions/UserSettings'
         '500':
           $ref: '#/responses/Error'
   /settings/picture:
@@ -246,7 +244,7 @@ paths:
         - Bearer: []
       tags:
         - hungry
-      summary: Deletes profile picture.
+      summary: deletes profile picture.
       responses:
         '204':
           description: Picture deleted
@@ -256,7 +254,6 @@ paths:
     get:
       tags:
         - hungry
-      summary: Get profile picture.
       description: Get profile picture.
       parameters:
         - name: token
@@ -286,8 +283,8 @@ paths:
       summary: Gets weekly menus
       description: Returns a list containing all menus of the week.
       parameters:
-        - name: userid
-          in: query
+        - in: query
+          name: userid
           required: false
           type: integer
           format: int64
@@ -309,16 +306,16 @@ paths:
       summary: Gets weekly menu of the specified week
       description: Returns a list containing all menus of the week.
       parameters:
-        - name: week
-          description: ex. 02-2017
-          in: path
-          required: true
-          type: string
         - name: userid
           in: query
           required: false
           type: integer
           format: int64
+        - name: week
+          description: ex. 02-2017
+          in: path
+          required: true
+          type: string
       responses:
         '200':
           description: A list of daily menus
@@ -339,8 +336,8 @@ paths:
       summary: Gets monthly menus.
       description: Return a list containing all menus of the month.
       parameters:
-        - name: userid
-          in: query
+        - in: query
+          name: userid
           required: false
           type: integer
           format: int64
@@ -367,11 +364,6 @@ paths:
           in: path
           required: true
           type: string
-        - name: userid
-          in: query
-          required: false
-          type: integer
-          format: int64
       responses:
         '200':
           description: A list of daily menus.
@@ -392,16 +384,16 @@ paths:
       summary: Place a new order
       description: A new order for the specified daily menu
       parameters:
+        - in: query
+          name: userid
+          required: false
+          type: integer
+          format: int64
         - name: order
           in: body
           description: The order to place
           schema:
             $ref: '#/definitions/Order'
-        - name: userid
-          in: query
-          required: false
-          type: integer
-          format: int64
       responses:
         '200':
           description: Order succesfully placed
@@ -409,6 +401,8 @@ paths:
             $ref: '#/definitions/DailyMenu'
         '400':
           description: Order couldn't have been placed.
+        '402':
+          description: Not enough balance.
         '409':
           description: Order already placed
           schema:
@@ -427,9 +421,14 @@ paths:
         - Bearer: []
       tags:
         - hungry
-      summary: Get order for the specified day
       description: Modify the order
+      summary: Get order for the specified day
       parameters:
+        - in: query
+          name: userid
+          required: false
+          type: integer
+          format: int64
         - name: id
           in: path
           required: true
@@ -449,11 +448,6 @@ paths:
           required: true
           type: string
           format: date
-        - name: userid
-          in: query
-          required: false
-          type: integer
-          format: int64
       responses:
         '200':
           description: Order succesfully retrieved
@@ -475,14 +469,14 @@ paths:
       summary: Modifies order for the specified day
       description: Modify the order
       parameters:
-        - name: userid
-          in: query
-          required: false
-          type: integer
-          format: int64
         - name: id
           in: path
           required: true
+          type: integer
+          format: int64
+        - in: query
+          name: userid
+          required: false
           type: integer
           format: int64
         - name: UpdateOrderItems
@@ -498,6 +492,9 @@ paths:
               dailyMenuDate:
                 type: string
                 format: date
+              comment:
+                type: string
+                maxLength: 150
               orderItems:
                 type: array
                 items:
@@ -510,11 +507,13 @@ paths:
         '200':
           description: Order succesfully modified
           schema:
-            $ref: '#/definitions/LastEdit'
+            $ref: '#/definitions/OrderUpdate'
         '304':
           description: Unmodified data
         '400':
           description: Order couldn't be modified.
+        '402':
+          description: Not enough balance.
         '404':
           description: Order not found (id)
         '409':
@@ -537,14 +536,14 @@ paths:
       summary: Deletes specified order
       description: Deletes the order
       parameters:
-        - name: userid
-          in: query
-          required: false
-          type: integer
-          format: int64
         - name: id
           in: path
           required: true
+          type: integer
+          format: int64
+        - in: query
+          name: userid
+          required: false
           type: integer
           format: int64
         - name: DailyMenuDetails
@@ -563,6 +562,8 @@ paths:
       responses:
         '200':
           description: Order succesfully deleted
+          schema:
+            $ref: '#/definitions/OrderUpdate'
         '400':
           description: Order couldn't be deleted.
         '404':
@@ -649,6 +650,8 @@ paths:
               price:
                 type: number
                 format: double
+              standard:
+                type: boolean
       responses:
         '204':
           description: Food succesfully created
@@ -865,6 +868,27 @@ paths:
             $ref: '#/definitions/Food'
         '500':
           $ref: '#/responses/Error'
+    delete:
+      security:
+        - Bearer: []
+      tags:
+        - admin
+      summary: Delete menu and orders
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: Daily menu deleted
+        '412':
+          description: Deadline passed
+        '500':
+          $ref: '#/responses/Error'
   /dailyMenus:
     post:
       security:
@@ -971,6 +995,27 @@ paths:
           description: bad request
         '500':
           $ref: '#/responses/Error'
+  '/report/{day}':
+    post:
+      security:
+        - Bearer: []
+      tags:
+        - chef
+      summary: Send email with daily summary
+      produces:
+        - application/json
+      parameters:
+        - in: path
+          name: day
+          required: true
+          type: string
+      responses:
+        '204':
+          description: Email sent
+        '400':
+          description: bad request
+        '500':
+          $ref: '#/responses/Error'
   /users:
     get:
       security:
@@ -999,6 +1044,11 @@ paths:
         - name: orderDirection
           in: query
           description: Request orderBy filter
+          required: false
+          type: string
+        - name: lastName
+          in: query
+          description: Request search term
           required: false
           type: string
       responses:
@@ -1398,6 +1448,32 @@ paths:
             format: int64
         '500':
           $ref: '#/responses/Error'
+  '/transactions/{id}':
+    get:
+      security:
+        - Bearer: []
+      tags:
+        - hungry
+      description: Get user's transactions
+      parameters:
+        - in: path
+          name: id
+          required: true
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: ok
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Transaction'
+        '400':
+          description: Bad request
+        '404':
+          description: Not found
+        '500':
+          $ref: '#/responses/Error'
 definitions:
   DailyOrder:
     type: object
@@ -1410,6 +1486,9 @@ definitions:
       dailyMenuDate:
         type: string
         format: date
+      comment:
+        type: string
+        maxLength: 150
       lastEdit:
         $ref: '#/definitions/LastEdit'
   User:
@@ -1439,6 +1518,16 @@ definitions:
       balance:
         type: number
         format: int64
+      orderNtf:
+        type: boolean
+      orderModifyNtf:
+        type: boolean
+      adminOrderNtf:
+        type: boolean
+      adminOrderModifyNtf:
+        type: boolean
+      balanceNtf:
+        type: boolean
       lastEdit:
         $ref: '#/definitions/LastEdit'
   UsersPage:
@@ -1454,6 +1543,30 @@ definitions:
       totalPages:
         type: integer
         format: int64
+  Settings:
+    type: object
+    description: User DTO
+    properties:
+      lastName:
+        type: string
+      firstName:
+        type: string
+      email:
+        type: string
+      password:
+        type: string
+      orderNtf:
+        type: boolean
+      orderModifyNtf:
+        type: boolean
+      adminOrderNtf:
+        type: boolean
+      adminOrderModifyNtf:
+        type: boolean
+      balanceNtf:
+        type: boolean
+      lastEdit:
+        $ref: '#/definitions/LastEdit'
   UserSettings:
     type: object
     description: User DTO
@@ -1466,6 +1579,16 @@ definitions:
         type: string
       role:
         type: string
+      orderNtf:
+        type: boolean
+      orderModifyNtf:
+        type: boolean
+      adminOrderNtf:
+        type: boolean
+      adminOrderModifyNtf:
+        type: boolean
+      balanceNtf:
+        type: boolean
       lastEdit:
         $ref: '#/definitions/LastEdit'
   UserReg:
@@ -1508,6 +1631,15 @@ definitions:
         type: string
       user:
         $ref: '#/definitions/User'
+  Refresh:
+    type: object
+    description: auth token
+    properties:
+      token:
+        type: string
+      balance:
+        type: number
+        format: int64
   Error:
     type: object
     description: An error with some info DTO
@@ -1582,6 +1714,8 @@ definitions:
       price:
         type: number
         format: double
+      standard:
+        type: boolean
       lastEdit:
         $ref: '#/definitions/LastEdit'
   Food:
@@ -1604,6 +1738,8 @@ definitions:
         format: double
       archived:
         type: boolean
+      standard:
+        type: boolean
   DailyMenu:
     type: object
     description: 'A daily Menu,  has order checked DTO'
@@ -1619,10 +1755,28 @@ definitions:
         format: int64
       isFinal:
         type: boolean
+      lastOrderDateTime:
+        type: string
+        format: date-time
+      comment:
+        type: string
+        maxLength: 150
       foods:
         type: array
         items:
           $ref: '#/definitions/FoodWithQuantity'
+      lastEdit:
+        $ref: '#/definitions/LastEdit'
+      balance:
+        type: number
+        format: int64
+  OrderUpdate:
+    type: object
+    description: Order last edit and user balance
+    properties:
+      balance:
+        type: number
+        format: int64
       lastEdit:
         $ref: '#/definitions/LastEdit'
   DailyMenuChef:
@@ -1680,6 +1834,9 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/OrderItem'
+      comment:
+        type: string
+        maxLength: 150
   DailyOrderSummary:
     type: object
     description: Daily order summary DTO
@@ -1720,6 +1877,9 @@ definitions:
       total:
         type: number
         format: double
+      comment:
+        type: string
+        maxLength: 150
       orderItems:
         type: array
         items:
@@ -1796,6 +1956,28 @@ definitions:
       balance:
         type: number
         format: int64
+  Transaction:
+    type: object
+    description: Transaction with balance
+    properties:
+      amount:
+        type: number
+        format: int64
+      balance:
+        type: number
+        format: int64
+      datetime:
+        type: string
+        format: date-time
+      firstName:
+        type: string
+      lastName:
+        type: string
+      menuDate:
+        type: string
+        format: date
+      orderType:
+        type: string
 responses:
   Error:
     description: An unexpected error occured.

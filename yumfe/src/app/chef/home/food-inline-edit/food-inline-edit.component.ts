@@ -1,7 +1,7 @@
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
 import * as remote from '../../../remote';
-import { MdSnackBar } from '@angular/material';
+import { MatSnackBar } from '@angular/material';
 
 @Component({
   selector: 'app-food-inline-edit',
@@ -36,7 +36,7 @@ export class FoodInlineEditComponent implements OnInit {
 
   constructor(
     public chefService: remote.ChefApi,
-    public snackBar: MdSnackBar,
+    public snackBar: MatSnackBar,
     public fb: FormBuilder) { }
 
   ngOnInit() {
@@ -103,8 +103,10 @@ export class FoodInlineEditComponent implements OnInit {
       value.foodName = this.foodEditable.foodItem.foodName;
       value.foodType = this.foodEditable.foodItem.foodType;
       value.price = this.foodEditable.foodItem.price;
+      
     }
-
+    value.standard = this.foodEditable.foodItem.standard;
+    
     this.chefService.foodsFoodIdPut(this.food.foodItem.id, value, this.clone).subscribe(foodDetails => {
       this.openSnackBar('Food succefully edited!', 'ok', 1);
     }, error => {

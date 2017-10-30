@@ -1,10 +1,10 @@
 /* You can add global styles to this file, and also import other style files */
 
 // Import theming functions
-@import '~@angular/material/theming';
+//@import '~@angular/material/theming';
 @import url(https://fonts.googleapis.com/icon?family=Material+Icons);
 @import url('https://fonts.googleapis.com/css?family=Roboto+Slab');
-@import '~@angular/material/prebuilt-themes/indigo-pink.css';
+//@import '~@angular/material/prebuilt-themes/indigo-pink.css';
 @import '~angular-calendar/dist/css/angular-calendar.css';
 @import './assets/style.css';
 
@@ -18,40 +18,60 @@ $white: #fff;
 
 $primary: #ff5b57;
 
-.min-sizes{
-  min-width: 900px;
-  min-height: 700px;
+html { overflow-y: scroll; }
+html, body{margin:0; padding:0;  font-family: Arial,   sans-serif;}
+.heading {
+  font-family: 'Roboto Slab', serif;
 }
+::-moz-selection { background: #ffef63; }
+::selection { background: #ffef63; }
+
+.mat-button-toggle, .mat-card,.mat-button, .mat-raised-button, .mat-icon-button, .mat-fab, .mat-mini-fab {
+  font-family: Arial,   sans-serif!important;
+}
+
+.main {
+  font-family: Arial,   sans-serif;;
+  padding: 0 200px;
+  min-width: 890px;
+}
+h1,h2,h3, .headerText, .cal-month-view .cal-header .cal-cell {  font-family: 'Roboto Slab Bold', 'Roboto Slab Regular', 'Roboto Slab', serif; }
 .navMonth{
-  font-family: 'Roboto Slab Bold', 'Roboto Slab Regular', 'Roboto Slab';
+  font-family: 'Roboto Slab Bold', 'Roboto Slab Regular', 'Roboto Slab', serif;
   font-weight: 700;
   font-style: normal;
   font-size: 28px;
   color: $semiBlack;
 }
+
+.min-sizes{
+  min-width: 900px;
+  min-height: 700px;
+}
+
 .fixedWidth{     min-width: 145px; display: inline-block; }
 
  /* Rules for sizing the icon. */
-.material-icons.md-18 { font-size: 18px; }
-.material-icons.md-24 { font-size: 24px; }
-.material-icons.md-36 { font-size: 36px; }
-.material-icons.md-48 { font-size: 48px; }
+.material-icons.mat-18 { font-size: 18px; }
+.material-icons.mat-24 { font-size: 24px; }
+.material-icons.mat-36 { font-size: 36px; }
+.material-icons.mat-48 { font-size: 48px; }
 
-.material-icons.md-48 {
+.material-icons.mat-48 {
     left: -4px;
     top: 11px;
     position: absolute;
 }
 
 /* Rules for using icons as black on a light background. */
-.material-icons.md-dark { color: rgba(0, 0, 0, 0.54); }
-.material-icons.md-dark.md-inactive { color: rgba(0, 0, 0, 0.26); }
+.material-icons.mat-dark { color: rgba(0, 0, 0, 0.54); }
+.material-icons.mat-dark.mat-inactive { color: rgba(0, 0, 0, 0.26); }
 
-.material-icons.md-dark.md-invert { color: $white; background-color: $black;}
+.material-icons.mat-dark.mat-invert { color: $white; background-color: $black;}
 
 /* Rules for using icons as white on a dark background. */
-.material-icons.md-light { color: $white; }
-.material-icons.md-light.md-inactive { color: rgba(255, 255, 255, 0.3); }
+.material-icons.mat-light { color: $white; }
+.material-icons.mat-light.mat-inactive { color: rgba(255, 255, 255, 0.3); }
 
 .is-flex {display: flex; align-items: center; justify-content: space-between; }
 .is-flex-space {display: flex; align-items: center; justify-content:space-around;}
@@ -64,12 +84,12 @@ $primary: #ff5b57;
 .smallSidePad{ padding: 0 10px;}
 .width100 { width:100%; }
 .noResize{
-  resize: none;
+  resize: none!important;
 }
 
 .noMarginInput  .mat-input-wrapper { margin: 20px 0 20px 0 !important; }
 
-html, body{margin:0; padding:0;  font-family:'Roboto Slab', serif;}
+
 
 .success-snack-bar {
   background-color: #4CAF50 !important;
@@ -101,9 +121,19 @@ html, body{margin:0; padding:0;  font-family:'Roboto Slab', serif;}
     padding-left: 30px !important;
 }
 
+.left-10 > figure {
+  justify-content: flex-start !important;
+  padding-left: 10px !important;
+}
+
 .right > figure {
     justify-content: flex-end !important;
     padding-right: 30px !important;
+}
+
+.right-10 > figure {
+  justify-content: flex-end !important;
+  padding-right: 10px !important;
 }
 
 .left-no-pad > figure {
@@ -135,7 +165,7 @@ html, body{margin:0; padding:0;  font-family:'Roboto Slab', serif;}
         color: #000000;
     }
 }
-  
+
 .mat-card-footer{ position: relative !important;}
 
 .calendarDate{ position: relative; height:250px; width:auto;  background-color: $white; }
@@ -160,9 +190,9 @@ html, body{margin:0; padding:0;  font-family:'Roboto Slab', serif;}
 .flexGrow{flex: 1;}
 .flexEnd{  align-self: flex-end;}
 .borderTop { border-top: 2px solid $primary;}
-.smallInputContainer{ width:100%;}
+.fullWithInputContainer{ width:100%!important;}
 
-.smallInputContainer > .mat-input-wrapper {
+.fullWithInputContainer > .mat-input-wrapper {
     margin: 0px 0 0 0 !important;
 }
 
@@ -174,11 +204,6 @@ html, body{margin:0; padding:0;  font-family:'Roboto Slab', serif;}
   background-color: #f3f3f3;
 }
 
-.main {
-  font-family:'Roboto Slab', serif;
-  padding: 0 200px;
-  min-width: 890px;
-}
 
 @media screen and (max-width: 1400px) {
   .main {
@@ -193,7 +218,7 @@ html, body{margin:0; padding:0;  font-family:'Roboto Slab', serif;}
 }
 
 .fullLayer{
-  position: absolute; min-width:100%; min-height:100%; background: rgba(247, 247, 247, 0.7);
+  position: absolute; min-width:100%; min-height:100%; background: rgba(247, 247, 247, 0);
   left: 0; top:0;
   display:flex; align-items: center; justify-content: center; z-index: 100;
 }
@@ -214,12 +239,11 @@ button.mat-raised-button.active {
 .hidden{visibility:hidden !important;}
 .relative{ position:relative; }
 .absolute{ position:absolute; }
-.menuDrawerButton{ position: absolute;     top: 78px;
-    right: -32px;}
+.menuDrawerButton{ position: absolute;
+    height: 0; padding: 0!important;
+    top: 102px;
+    right: 0px;}
 .menuDrawer{ max-width: 320px!important;}
-
-.material-icons{ transition: 0.6s ease-in-out all; transform: rotate(0deg) rotate(1deg);}
-.isOpen .material-icons{ transform:   rotate(180deg);  }
 
 .bigger-button {
   font-size: 33px !important;
@@ -234,6 +258,23 @@ button.mat-raised-button.active {
 .headerText{ padding: 10px 0;}
 
 .largerSelect .mat-select-trigger { min-width: 150px; }
+
+// .mediumSelect .mat-select-trigger { min-width: 140px; }
+
+// .smallerSelect .mat-select-trigger { min-width: 60px; }
+.sm-select  { max-width: 60px; }
+
+.sm-med-select  { max-width: 80px; }
+
+.med-select  { max-width: 135px; }
+
+.lg-select { max-width: 150px; }
+
+
+
+.select-padding {
+  padding-top: 20px;
+}
 
 //terms & policy css
 .tabContent{ padding:10px;     max-height: 430px;}
@@ -251,8 +292,12 @@ button.mat-raised-button.active {
   width: 80%;
 }
 
-.input-extra-width {
-  width: 90%;
+.input-sm-mat-width {
+  width: 75% !important;
+}
+
+.input-full-width {
+  width: 100% !important;
 }
 
 .loader {
@@ -275,3 +320,24 @@ button.mat-raised-button.active {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+
+//TEMP FIX button flickering from white bg
+
+.mat-fab, .mat-mini-fab, .mat-raised-button{
+  transition: background 0s!important;
+}
+.deadlineCurrency .mat-form-field-infix{
+  background-color: white;
+  border: 2px solid #CECECE;
+  padding: 5px;
+}
+
+.deadlineCurrency .mat-form-field-underline{
+  height: 0;
+}
+
+.deadlineCurrency .mat-input-wrapper{
+  margin: 20px 0 0 10px;
+}
+

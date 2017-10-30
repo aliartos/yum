@@ -1,11 +1,15 @@
 import { Component, OnInit, Inject, ViewChild } from '@angular/core';
 import { Location } from '@angular/common';
 import * as remote from '../../remote';
-import { MdButtonModule, MdMenu, MdMenuTrigger } from '@angular/material';
+import { MatButtonModule, MatMenu, MatMenuTrigger } from '@angular/material';
 import { AuthenticationService } from '../../shared/authentication.service';
 import { BASE_PATH } from '../../remote/variables';
 import { Router, ActivatedRoute, RouterLinkActive, NavigationEnd } from '@angular/router';
 import { ControlUserService } from '../services/control-user.service';
+import { BalanceService } from '../services/balance.service';
+import { GlobalSettingsService } from '../../shared/services/global-settings-service.service';
+import { Observable, BehaviorSubject } from 'rxjs/Rx';
+
 
 @Component({
   selector: 'app-header',
@@ -22,22 +26,30 @@ export class HeaderComponent implements OnInit {
   public homepages: any[];
   public homepage: any[];
   public controlUser: remote.User;
+  public balance: Observable<number>;
+  public currency: Observable<string>;
 
-  @ViewChild(MdMenuTrigger) trigger: MdMenuTrigger; //
+  @ViewChild(MatMenuTrigger) trigger: MatMenuTrigger; //
 
   constructor(private authenticationService: AuthenticationService,
-    @Inject(BASE_PATH) private baseUrl: string, private router: Router, private route: ActivatedRoute, private controlUserService: ControlUserService, private location: Location) { }
+    @Inject(BASE_PATH) private baseUrl: string,
+    private router: Router, private route: ActivatedRoute,
+    private controlUserService: ControlUserService,
+    private location: Location,
+    private balanceService: BalanceService,
+    private globalSettingsService: GlobalSettingsService
+  ) { }
 
   ngOnInit() {
 
     this.user = this.authenticationService.getLoggedInUser();
     this.role = this.authenticationService.getLoggedInRole();
-    
+
     this.controlUserService.getUser().subscribe(user=>{
       this.controlUser=user;
     });
 
-    this.router.events.subscribe((event) => { 
+    this.router.events.subscribe((event) => {
         if(event instanceof NavigationEnd) {
             //console.log(event);
            if(!event.url.startsWith('/hungry') && this.controlUser!=null){
@@ -62,11 +74,7 @@ export class HeaderComponent implements OnInit {
       }
 
     });
-
-
-
-
-
+ 
     this.userPicture = this.baseUrl + '/settings/picture/token?token=' + this.authenticationService.getToken();
 
     this.authenticationService.getObservableChange().subscribe(
@@ -79,6 +87,10 @@ export class HeaderComponent implements OnInit {
     // setPositionClasses
     this.setDestinations();
     this.isOpen = this.trigger.menuOpen;
+
+    this.balance = this.balanceService.getBalance();
+    this.currency = this.globalSettingsService.getCurrency();
+
   }
 
   getUser() {
@@ -126,8 +138,12 @@ export class HeaderComponent implements OnInit {
     }
   }
 
-  exitControlUser(){     
-    
+  public goToSettings(){
+    this.router.navigate(['/settings']);
+  }
+
+  exitControlUser(){
+
      this.controlUserService.setUser(0);
      this.router.navigate(['/hungry']);
   }

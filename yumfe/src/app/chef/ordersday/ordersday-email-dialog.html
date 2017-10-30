@@ -1,0 +1,11 @@
+<h1 matDialogTitle class="centered">Order Summary Email</h1>
+<mat-dialog-content  class="centered">
+  <div>Do you want to send an email report</div>
+  <div>with this day's order summary?</div>
+</mat-dialog-content>
+<mat-grid-list cols="4" rowHeight="20px">
+</mat-grid-list>
+<div fxLayout="row" fxLayoutAlign="space-around center">
+  <button mat-raised-button color="accent" (click)="dialogRef.close('Yes')">Yes</button>
+  <button mat-raised-button color="accent" (click)="dialogRef.close('No')">No</button>
+</div>

@@ -1,0 +1,9 @@
+<h1 matDialogTitle class="centered">Delete menu and orders for {{menuDate}}</h1>
+<mat-dialog-content class="dialog-content-size">
+  <div>This action deletes the menu and the associated orders, are you sure want to delete it? </div>  
+</mat-dialog-content>
+<br>
+<div class="is-flex">
+    <button mat-raised-button color="accent" (click)="dialogRef.close('Yes')">Yes</button>
+    <button mat-raised-button color="accent" (click)="dialogRef.close('No')">No</button>
+</div>

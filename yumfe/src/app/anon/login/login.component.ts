@@ -2,7 +2,7 @@ import { Component, OnInit, EventEmitter, Input, Output, Renderer2, ElementRef, 
 import { Router } from '@angular/router';
 import { AuthenticationService } from '../../shared/authentication.service';
 import { FormBuilder, FormGroup, FormControl, Validators } from '@angular/forms';
-import { MdSnackBar, MdSnackBarConfig } from '@angular/material';
+import { MatSnackBar, MatSnackBarConfig } from '@angular/material';
 import { ViewContainerRef } from '@angular/core';
 import { QuotesService } from './../services/quotes.service';
 
@@ -29,26 +29,25 @@ export class LoginComponent implements OnInit {
   public disableBtn = false;
 
   public externalAuth: Boolean = true;
-  public config: MdSnackBarConfig;
+  public config: MatSnackBarConfig;
   public quote: Quote;
 
   constructor(
     private fb: FormBuilder,
     private router: Router,
-    private snackBar: MdSnackBar,
+    private snackBar: MatSnackBar,
     private authService: AuthenticationService,
     private elRef: ElementRef,
     private renderer: Renderer2,
     public viewContainerRef: ViewContainerRef,
     private quoteService: QuotesService
   ) {
-    this.config = new MdSnackBarConfig();
+    this.config = new MatSnackBarConfig();
   }
 
   ngOnInit() {
     // Create Form group, form controls, validators.
 
-    const emailPattern = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
     this.loginForm = this.fb.group({
       username: [''
@@ -57,7 +56,7 @@ export class LoginComponent implements OnInit {
       email: ['', [
         Validators.required,
         Validators.minLength(2),
-        Validators.pattern(emailPattern)
+        Validators.email
       ]],
       password: ['', [
         Validators.required,
@@ -80,7 +79,7 @@ export class LoginComponent implements OnInit {
           this.loginForm.get('email').setValidators([
             Validators.required,
             Validators.minLength(2),
-            Validators.pattern(emailPattern)
+            Validators.email
           ]);
 
         }
@@ -89,7 +88,7 @@ export class LoginComponent implements OnInit {
         this.loginForm.get('email').updateValueAndValidity({ onlySelf: true, emitEvent: false });
 
 
-        // Handle chrome autofill password  
+        // Handle chrome autofill password
         let passwordListener = this.loginForm.controls['password'].valueChanges
           .startWith(null)
           .debounceTime(200)
@@ -126,7 +125,12 @@ export class LoginComponent implements OnInit {
   public login() {
     this.showSpinner = true;
     this.disableBtn = true;
-    this.authService.login(this.loginForm.value.email, this.loginForm.value.password, this.loginForm.value.username)
+    
+    this.loginForm.get('username').updateValueAndValidity({ onlySelf: true, emitEvent: true });
+    this.loginForm.get('email').updateValueAndValidity({ onlySelf: true, emitEvent: true });
+    this.loginForm.get('password').updateValueAndValidity({ onlySelf: true, emitEvent: true }); 
+
+    this.authService.login(this.loginForm.get('email').value, this.loginForm.get('password').value, this.loginForm.get('username').value)
       .finally(() => {
         this.showSpinner = false;
         this.disableBtn = false;

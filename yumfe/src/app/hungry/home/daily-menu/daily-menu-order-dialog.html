@@ -1,8 +1,8 @@
 <div fxLayout="row" class="right-align">
-    <div fxFlex="100">
-      <button class="miniBtnX" md-button (click)="dialogRef.close('No')">x</button>
-    </div>
+  <div fxFlex="100">
+    <button class="miniBtnX" mat-button (click)="dialogRef.close('No')">x</button>
   </div>
+</div>
 <div class="dialog">
   <div class="order">
     <div class="centered" fxLayout="row">
@@ -13,22 +13,27 @@
     <div class="centered">
       <!--<p>Congrats,</p>-->
       <p><b>Ms/Mr {{fullName}},</b></p>
-      <p>You are about to order for<br><ng-container *ngIf="controlledUserFullName">{{controlledUserFullName}}<br></ng-container> <b>{{date|date:"EEEE d MMM y"}}</b>
-      .</p>
+      <p>You are about to order for<br>
+        <ng-container *ngIf="controlledUserFullName">{{controlledUserFullName}}<br></ng-container> <b>{{date|date:"EEEE d MMM y"}}</b> .
+      </p>
     </div>
     <div>
-      <div *ngFor="let food of orderedFoods">
-        <div class="food" fxLayout="row">
-          <div fxFlex="70">
-            {{food.food.foodName}}
-          </div>
-          <div fxFlex="30">
-            <div fxLayout="row">
-              <div fxFlex="40">
-                {{food.quantity}}
-              </div>
-              <div fxFlex="60" class="right-align">
-                <b>x {{food.food.price | number : '1.2-2'}}<span [innerHTML]="currency | async"></span></b>
+      <div class="foodList">
+        <div *ngFor="let food of orderedFoods">
+          <div class="food" fxLayout="row" fxLayoutAlign="space-between center">
+            <div fxFlex="10" [ngClass]="{'icon-Meal': food.food.foodType==='MAIN', 'icon-Salad': food.food.foodType==='SALAD', 'icon-Drink': food.food.foodType==='DRINK'}"
+              class="cell"> </div>
+            <div fxFlex="55">
+              {{food.food.foodName}}
+            </div>
+            <div fxFlex="35">
+              <div fxLayout="row"  fxLayoutAlign="space-between center">
+                <div fxFlex="30">
+                  {{food.quantity}}
+                </div>
+                <div fxFlex="70" class="right-align">
+                  <b>x {{food.food.price | number : '1.2-2'}}<span [innerHTML]="currency | async"></span></b>
+                </div>
               </div>
             </div>
           </div>
@@ -39,19 +44,25 @@
           <b>Total</b>
         </div>
         <div fxFlex="24">
-          &nbsp;<!--Items: {{items}}-->
+          &nbsp;
+          <!--Items: {{items}}-->
         </div>
-        <div fxFlex="20" class="right-align">
+        <div fxFlex="20" class="right-align paddRight">
           <b>{{total | number : '1.2-2'}}<span [innerHTML]="currency | async"></span></b>
         </div>
       </div>
     </div>
-    <div class="centered email" fxLayout="row">
-      <md-checkbox fxFlex="100" [checked]="isChecked" (change)="toggle()">Email me this</md-checkbox>
+    <mat-form-field class="full-width">
+      <textarea matInput placeholder="Comments" value="" maxlength="150" class="noResize" (ngModelChange)="countComment(comment=$event)" [ngModel]="comment"></textarea>
+      <mat-icon matSuffix>mode_edit</mat-icon>
+      <mat-hint>{{characterleft}} character(s) left</mat-hint>
+    </mat-form-field>
+    <div class="centered email" fxLayout="row" >
+      <mat-checkbox *ngIf="controlledUserFullName === null" fxFlex="100" [checked]="isChecked" (change)="toggle()">Email me this</mat-checkbox>
     </div>
     <div class="centered" fxLayout="row">
-      <button class="buttons cancel" fxFlex="50" md-raised-button (click)="dialogRef.close('No')" color="accent">Cancel</button>
-      <button class="buttons" fxFlex="50" md-raised-button (click)="dialogRef.close(getEmailCheck())" color="accent">Bon appetit!</button>
+      <button class="buttons cancel" fxFlex="50" mat-raised-button (click)="dialogRef.close('No')" color="accent">Cancel</button>
+      <button class="buttons" fxFlex="50" mat-raised-button (click)="dialogRef.close(getEmailCheck())" color="accent">Bon appetit!</button>
     </div>
   </div>
 </div>

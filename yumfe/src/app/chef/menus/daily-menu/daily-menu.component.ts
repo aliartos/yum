@@ -1,12 +1,12 @@
 import { Component, OnInit, Input, Output, SimpleChanges, OnChanges, EventEmitter, ViewChild, Renderer2, ElementRef } from '@angular/core';
 import { Validators, FormGroup, FormControl, FormBuilder } from '@angular/forms';
 import { DatePipe } from '@angular/common';
-import { MdAutocomplete, MdAutocompleteTrigger, MdProgressBar } from '@angular/material';
+import { MatAutocomplete, MatAutocompleteTrigger, MatProgressBar } from '@angular/material';
 import { subDays,  isValid , getHours, getMinutes, getSeconds, addDays, getMonth, compareAsc } from 'date-fns';
 import * as remote from '../../../remote';
 import * as models from './../../../shared/models';
 
-import { FoodsService } from '../../services/foods.service';
+import { FoodsService } from '../../../shared/services/foods.service';
 import { GlobalSettingsService } from '../../../shared/services/global-settings-service.service';
 import { Observable } from 'rxjs/Rx';
 
@@ -20,17 +20,18 @@ import { Observable } from 'rxjs/Rx';
 export class DailyMenuComponent implements OnInit, OnChanges {
 
 
-
   @Input() foods: Array<remote.Food>;
   foodsAvailable: Array<remote.Food>;
 
   @Input() day;
   @Input() viewdate;
   @Input() menu: remote.DailyMenuChef;
+  @Input() userRole: string;
   @Input() holidays: string[];
   @Output() snackMessage = new EventEmitter<models.SnackMessage>();
+  @Output() deleteMenu = new EventEmitter<remote.DailyMenuChef>();
 
-  @ViewChild( MdAutocompleteTrigger ) mdAutoCompleteTrigger: MdAutocompleteTrigger; //
+  @ViewChild( MatAutocompleteTrigger ) matAutoCompleteTrigger: MatAutocompleteTrigger; //
   @ViewChild('blurMe') el: ElementRef;
   @ViewChild('focusMe') focusMe: ElementRef;
 
@@ -45,6 +46,9 @@ export class DailyMenuComponent implements OnInit, OnChanges {
   menuCanBeDiscarded: Boolean = false;
   menuCanBeUpdated: Boolean = false;
   menuCanBeEdited: Boolean = false;
+  menuHasAllStandards: Boolean = false;
+  menuCanBeDeletedWithOrders: Boolean = false;
+  private quantityOfStandards: number=0;
 
   checkUserChanges: Boolean = false;
 
@@ -62,46 +66,45 @@ export class DailyMenuComponent implements OnInit, OnChanges {
     this.myForm = new FormGroup({
         dropList: this.selectCtrl
     });
-
  
-    if(getMonth(this.day)!==getMonth(this.viewdate)){
-      this.showSpinner=false;
-      return;
-    }
-
-    this.setAvailableFoods();
-
-    this.setup();
+ 
   }
 
-   ngOnChanges(changes: SimpleChanges) {
-      if (changes.menu!==undefined && !changes.menu.isFirstChange()){
-          //console.log("menu changed:"+changes.menu.currentValue.date, changes.menu.currentValue);
-          this.setup();
+   ngOnChanges(changes: SimpleChanges) { 
+
+      if(getMonth(this.day)!==getMonth(this.viewdate)){
+        this.showSpinner=false;
+        return;
       }
 
-      if (changes.foods!==undefined && !changes.foods.isFirstChange()){
-        //console.log("refresh menu foods");
-          this.setAvailableFoods();
-          this.setup();
+      if( changes.menu || changes.foods){
+        this.setAvailableFoods();
+        this.setup();
       }
    }
+
   setAvailableFoods(){
     this.foodsAvailable=[];
+    this.quantityOfStandards = 0;
     for(let food of this.foods){
         if(!food.archived){
           this.foodsAvailable.push(food);
+          if(food.standard) {
+            this.quantityOfStandards++;
+          }
         }
     }
+    this.foodsAvailable = this.foodsService.sortArrayOfFoods(this.foodsAvailable );
   }
 
   setup() {
-      console.log("setup menu");
+      //console.log("setup menu");
 
       this.menuCanBeDiscarded = false;
       this.menuCanBeUpdated  = false;
       this.menuCanBeEdited  = false;
       this.checkUserChanges  = false;
+      this.menuCanBeDeletedWithOrders=false;
 
       this.initMenu = this.menu;
 
@@ -129,16 +132,18 @@ export class DailyMenuComponent implements OnInit, OnChanges {
               this.menuCanBeEdited = new Date(menuDate) > today;
 
               //console.log("deadline:", new Date(menuDate));
-
+              if(this.menuCanBeEdited && this.userRole && this.userRole=='admin' && this.menu && this.menu.id){
+                this.menuCanBeDeletedWithOrders=true;
+              } 
           });
       }
 
-      if (this.menu !== undefined) {
+      if (this.menu) {
 
             for(let menuFood of this.menu.foods){
                 //let food = this.foodsService.getFoodById(menuFood.foodId);
                  this.foodsService.getFoodById(menuFood.foodId).subscribe( food=>{
-                   if( food!==undefined){
+                   if( food ){
                     this.addMenuFood(food);
                   }
                 });
@@ -152,17 +157,7 @@ export class DailyMenuComponent implements OnInit, OnChanges {
              .map(food => {
                if (food && typeof food === 'object'){
                     this.addMenuFood(food);
-                    this.selectCtrl.patchValue('');
-                    //window.blur();
-                    //document.getElementById("focusMe").focus();
-                    //this.el.nativeElement.blur();
-
-
-                    //this.mdAutoCompleteTrigger.closePanel();
-                    //this.mdAutoCompleteTrigger.openPanel();
-
-                    //console.log(allDivs);
-                    //allDivs.blur();
+                    this.selectCtrl.patchValue(''); 
                }
                else {
                  return food;
@@ -170,10 +165,8 @@ export class DailyMenuComponent implements OnInit, OnChanges {
               })
              .map(name => name && name !== '' ? this.filter(name) : this.foodsAvailable.slice());
 
-      this.selectCtrl.valueChanges.subscribe(status => {
-          console.log(status);
-         if ( this.el && this.focusMe && status.length == 0 ) {
-            //console.log('blur enter');
+      this.selectCtrl.valueChanges.subscribe(status => { 
+         if ( this.el && this.focusMe && status.length == 0 ) { 
             this.el.nativeElement.blur();
             this.focusMe.nativeElement.focus();
             setTimeout(() => {
@@ -204,12 +197,20 @@ export class DailyMenuComponent implements OnInit, OnChanges {
       return this.foodsAvailable.filter(food => new RegExp(`(.)*${name}(.)*`, 'gi').test(food.foodName));
    }
 
-  addMenuFood(food: remote.Food) {
-    //console.log(this.selectCtrl);
+  addMenuFood(food: remote.Food) { 
 
     this.foodsSelectedMap.set( food.id,  food);
     this.removeFromAvailable(food);
     this.displayList();
+  }
+
+  addAllStandards(){
+    for(let food of this.foodsAvailable ){
+      if(food.standard){
+        this.addMenuFood(food);
+      }
+    }
+    this.selectCtrl.updateValueAndValidity({ onlySelf: false, emitEvent: true });
   }
 
   removeMenuFood(food: remote.Food) {
@@ -219,7 +220,7 @@ export class DailyMenuComponent implements OnInit, OnChanges {
   }
 
   removeFromAvailable(foodRemove: remote.Food){
-      this.foodsAvailable = this.foodsAvailable.filter(food => food.id !== foodRemove.id);
+      this.foodsAvailable = this.foodsAvailable.filter(food => food.id !== foodRemove.id); 
   }
 
   addToAvailable(food: remote.Food){
@@ -237,14 +238,7 @@ export class DailyMenuComponent implements OnInit, OnChanges {
       this.foodsSelected.push(food);
     });
 
-    this.foodsSelected = this.foodsSelected.sort((n1,n2) => {
-    if (n1.foodType > n2.foodType) {
-            return -1;
-        }else if (n1.foodType < n2.foodType) {
-            return 1;
-        }
-        return 0;
-    });
+    this.foodsSelected =  this.foodsService.sortArrayOfFoods(this.foodsSelected );
 
     this.checkChanges();
   }
@@ -265,7 +259,7 @@ export class DailyMenuComponent implements OnInit, OnChanges {
 
       // PUT
 
-      if (this.menu !== undefined  ) {
+      if (this.menu ) {
 
           console.log("update menu id:", this.menu.id);
 
@@ -413,6 +407,8 @@ export class DailyMenuComponent implements OnInit, OnChanges {
   }
 
   checkChanges(){
+
+    // Check for menu changes
     if(this.checkUserChanges && this.initfoodsSelected != this.foodsSelected && (this.foodsSelected.length>0 || this.initfoodsSelected.length>0) ){
       this.menuCanBeDiscarded = true;
       this.menuCanBeUpdated = true;
@@ -421,8 +417,18 @@ export class DailyMenuComponent implements OnInit, OnChanges {
       this.menuCanBeDiscarded = false;
       this.menuCanBeUpdated = false;
     }
+
+    //Check if all standards in menu
+    let count=0;
+    for( let food of this.foodsSelected){
+      if(food.standard) count++;
+    }
+    this.menuHasAllStandards = (count==this.quantityOfStandards);
+    //console.log(this.quantityOfStandards);
   }
 
-
+  public deleteMenuAndOrders(){
+    this.deleteMenu.emit(this.menu);
+  }
 
 }

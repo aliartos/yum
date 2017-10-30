@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import {ChefNavComponent} from '../shared/chef-nav/chef-nav.component';
 import * as remote from '../../remote';
-import { MdButtonModule } from '@angular/material';
+import { MatButtonModule } from '@angular/material';
 import { CalendarEvent, CalendarEventAction, CalendarEventTimesChangedEvent } from 'angular-calendar';
 import { subDays, addDays, startOfMonth, endOfMonth, getMonth, getYear, isToday, isValid } from 'date-fns';
 import { DatePipe } from '@angular/common';
@@ -12,7 +12,7 @@ import 'rxjs/add/operator/switchMap';
 
 import { OrderTotalComponent } from './order-total/order-total.component';
 import { MonthNavComponent } from '../../shared/header/month-nav/month-nav.component';
-import { FoodsService } from '../services/foods.service';
+import { FoodsService } from '../../shared/services/foods.service';
 import { GlobalSettingsService } from '../../shared/services/global-settings-service.service';
 
 @Component({

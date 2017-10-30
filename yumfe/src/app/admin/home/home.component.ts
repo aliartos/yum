@@ -1,7 +1,7 @@
 import { Component, OnInit, EventEmitter } from '@angular/core';
 import { FormBuilder, FormGroup, FormControl, Validators } from '@angular/forms';
 import * as remote from '../../remote';
-import { MdSnackBar, MdDialog, MdDialogRef } from '@angular/material';
+import { MatSnackBar, MatDialog, MatDialogRef } from '@angular/material';
 import { AdminNavComponent } from './../shared/admin-nav/admin-nav.component';
 import { AuthenticationService } from '../../shared/authentication.service';
 
@@ -20,6 +20,7 @@ export class HomeComponent implements OnInit {
   private totalpages: number;
   public showLoadSpinner = false;
   public externalAuth: Boolean = false;
+  private searchTerm: string= null;
 
   // Options for pageSize Select
   public pageSizes = [
@@ -37,8 +38,9 @@ export class HomeComponent implements OnInit {
     { value: 'approved', viewValue: 'Approval status' }
   ];
 
-  //form
+  // forms
   public userGroup: FormGroup;
+  public searchGroup: FormGroup;
 
   // create user spinner
   public showSpinner = false;
@@ -48,7 +50,7 @@ export class HomeComponent implements OnInit {
   pagedItems: any[];
 
   constructor(private adminService: remote.AdminApi, private fb: FormBuilder,
-    public snackBar: MdSnackBar, public dialog: MdDialog,
+    public snackBar: MatSnackBar, public dialog: MatDialog,
     private authService: AuthenticationService) {
     //this.someExpression = null;
   }
@@ -100,16 +102,20 @@ export class HomeComponent implements OnInit {
   ngOnInit() {
     // Create Form group, form controls, validators
     this.userGroup = this.buildForm();
-    this.loadUsers(this.page); 
+    this.loadUsers(this.page);
     this.externalAuth = this.authService.hasExternalAuth();
-     
+
+    this.searchGroup = this.fb.group({
+       lastName: [''],
+    });
+
   }
 
 
   // load users of specific page
   private loadUsers(page: number) {
     this.showLoadSpinner = true;
-    this.adminService.usersGet((page - 1).toString(), this.pageSize.toString(), this.orderBy, this.direction).subscribe(usersPage => {
+    this.adminService.usersGet((page - 1).toString(), this.pageSize.toString(), this.orderBy, this.direction, this.searchTerm).subscribe(usersPage => {
       this.users = usersPage.users;
       this.totalUsers = usersPage.totalElements;
       this.totalpages = usersPage.totalPages;
@@ -212,6 +218,18 @@ export class HomeComponent implements OnInit {
   handlechangePage(page) {
     this.page = page;
     this.loadUsers(page);
+  }
+
+  searchUsers() {
+
+    const inputSearchTerm = this.searchGroup.get('lastName').value;
+    if (inputSearchTerm.length > 2) {
+      this.searchTerm = inputSearchTerm;
+      this.loadUsers(1);
+    } else if (inputSearchTerm.length === 0) {
+      this.searchTerm = null;
+      this.loadUsers(1);
+    }
   }
 
 }

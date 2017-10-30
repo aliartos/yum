@@ -33,6 +33,8 @@ import { CalendarDayComponent } from './holidays/calendar-day/calendar-day.compo
 import { CalendarModule } from 'angular-calendar';
 import { RouterModule } from '@angular/router';
 import { BalanceModule } from '../shared/balance/balance.module'
+import { TransactionsModule } from '../shared/transactions/transactions.module'
+import {  DeletePictureDialog } from './../shared/profile/profile.component';
 
 @NgModule({
   imports: [
@@ -46,7 +48,8 @@ import { BalanceModule } from '../shared/balance/balance.module'
     LoggedModule,
     FlexLayoutModule,
     CalendarModule,
-    BalanceModule
+    BalanceModule,
+    TransactionsModule
   ],
   declarations: [
     HomeComponent,
@@ -78,7 +81,8 @@ import { BalanceModule } from '../shared/balance/balance.module'
     UserDelete409Dialog,
     UserDelete412Dialog,
     UserDelete412DisapprovedDialog,
-    ResetPwdDialog
+    ResetPwdDialog,
+    DeletePictureDialog
   ],
   exports: []
 })

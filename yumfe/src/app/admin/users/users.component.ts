@@ -2,7 +2,7 @@ import { Component, OnInit, Inject } from '@angular/core';
 import { ActivatedRoute, Params } from '@angular/router';
 import { FormBuilder, FormGroup, FormControl, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { MdSnackBar, MdDialog, MdDialogRef, MD_DIALOG_DATA } from '@angular/material';
+import { MatSnackBar, MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 
 import * as remote from '../../remote';
 import { AuthenticationService } from '../../shared/authentication.service';
@@ -16,7 +16,7 @@ import { ControlUserService } from '../../shared/services/control-user.service';
 export class UsersComponent implements OnInit {
 
   private sub: any;
-  private userId = 0;
+  public userId = 0;
   public user: remote.User;
   public profileGroup: FormGroup;
   //copy initial input values for enabling/disabling submit button
@@ -29,11 +29,22 @@ export class UsersComponent implements OnInit {
   //spinner
   public showSpinner = false;
   public invalid = false;
-  public externalAuth: Boolean = false; 
+  public externalAuth: Boolean = false;
+  public balanceGroup: FormGroup;
+  public balance: number;
+  public balanceUpdate = false;
 
-  constructor(private route: ActivatedRoute, private adminService: remote.AdminApi, private fb: FormBuilder,
-    public snackBar: MdSnackBar, public dialog: MdDialog, private router: Router,
-    private authService: AuthenticationService, private controlUserService:ControlUserService) { }
+  constructor(
+    private route: ActivatedRoute,
+    private adminService: remote.AdminApi,
+    private fb: FormBuilder,
+    public snackBar: MatSnackBar,
+    public dialog: MatDialog,
+    private router: Router,
+    private authService: AuthenticationService,
+    private controlUserService:ControlUserService
+  ) { }
+
 
   ngOnInit() {
     //check if id is valid
@@ -52,7 +63,7 @@ export class UsersComponent implements OnInit {
       lastName: ['', [Validators.required, Validators.minLength(1)]],
       email: ['', [
         Validators.required, Validators.minLength(2),
-        Validators.pattern(/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/)
+        Validators.email
       ]
       ]
     });
@@ -203,6 +214,14 @@ export class UsersComponent implements OnInit {
     this.user.lastEdit.version += 1;
   }
 
+  handleBalanceUpdated() {
+    if (this.balanceUpdate) {
+      this.balanceUpdate = false;
+    } else {
+      this.balanceUpdate = true;
+    }
+   }
+
   viewUserMenu(){
     //this.router.navigate(['/hungry/?userid='+this.userId]);
     this.controlUserService.setUser(this.userId);
@@ -216,5 +235,5 @@ export class UsersComponent implements OnInit {
   templateUrl: './admin-reset-pwd-dialog.html',
 })
 export class ResetPwdDialog {
-  constructor(public dialogRef: MdDialogRef<ResetPwdDialog>) { }
+  constructor(public dialogRef: MatDialogRef<ResetPwdDialog>) { }
 }

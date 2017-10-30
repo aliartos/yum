@@ -1,11 +1,11 @@
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import * as remote from '../../../remote';
-import { MdDialog, MdDialogRef } from '@angular/material';
-import { MdDialogConfig } from '@angular/material';
+import { MatDialog, MatDialogRef } from '@angular/material';
+import { MatDialogConfig } from '@angular/material';
 import { Observable } from 'rxjs/Rx';
 import { GlobalSettingsService } from './../../../shared/services/global-settings-service.service';
 import { DecimalPipe } from '@angular/common';
-import { MdSnackBar } from '@angular/material';
+import { MatSnackBar, MatSlideToggle } from '@angular/material';
 
 @Component({
   selector: 'app-food',
@@ -22,19 +22,20 @@ export class FoodComponent implements OnInit {
   public clone = false;
   public editing = false;
   public ready: boolean;
-  public config = new MdDialogConfig();
+  public config = new MatDialogConfig();
   public currency: Observable<string>;
   public flagClone = false;
   public percentage: number;
   public lastWeek = 0;
   public secondLastWeek = 0;
-
+  public showSpinner = false;
+  
   constructor(
     public chefService: remote.ChefApi,
-    public dialog: MdDialog,
+    public dialog: MatDialog,
     public globalSettingsService: GlobalSettingsService,
     public decpipe: DecimalPipe,
-    public snackBar: MdSnackBar
+    public snackBar: MatSnackBar
   ) { }
 
   ngOnInit() {
@@ -51,25 +52,26 @@ export class FoodComponent implements OnInit {
 
     if (this.secondLastWeek === 0 && this.lastWeek === 0) {
       this.percentage = 0;
-    } else if (this.secondLastWeek === 0 && this.lastWeek === 0) {
-      this.percentage = -1;
     } else {
-      this.percentage = (this.lastWeek * 100) / this.secondLastWeek;
-      this.percentage -= 100;
+      this.percentage = ((this.lastWeek-this.secondLastWeek)*100) / this.secondLastWeek; 
     }
 
   }
 
-  public openSnackBar(message: string, action: string, timeOut: boolean) {
-    if (timeOut) {
-      this.snackBar.open(message, action, {
-        duration: 5000,
-        extraClasses: ['success-snack-bar']
-      });
-    } else {
-      this.snackBar.open(message, action, {
-        extraClasses: ['error-snack-bar']
-      });
+  // status -> 1:success , 2:error
+  public openSnackBar(message: string, action: string, status: number) {
+    switch (status) {
+      case 1:
+        this.snackBar.open(message, action, {
+          duration: 5000,
+          extraClasses: ['success-snack-bar']
+        });
+        break;
+      case 2:
+        this.snackBar.open(message, action, {
+          extraClasses: ['error-snack-bar']
+        });
+        break;
     }
   }
 
@@ -103,7 +105,7 @@ export class FoodComponent implements OnInit {
       }
     }, error => {
       console.log(error);
-      this.openSnackBar('Food cannot be updated!', 'ok', false);
+      this.openSnackBar('Food cannot be updated!', 'ok', 2);
     },
       () => { this.ready = true; }); // when complete
   }
@@ -122,10 +124,10 @@ export class FoodComponent implements OnInit {
       if (result === 1) {
         // Delete the Food
         this.chefService.foodsFoodIdDelete(this.food.foodItem.id).subscribe(data => {
-          this.openSnackBar('Food succefully deleted!', 'ok', true);
+          this.openSnackBar('Food succefully deleted!', 'ok', 1);
         }, error => {
           console.log(error);
-          this.openSnackBar('Food cannot be deleted!', 'ok', false);
+          this.openSnackBar('Food cannot be deleted!', 'ok', 2);
           if (error.status === 412) {
             const deleteRef = this.dialog.open(DeleteDialogComponent, this.config);
             deleteRef.afterClosed().subscribe(result => {
@@ -133,10 +135,10 @@ export class FoodComponent implements OnInit {
               if (result === 1) {
                 // Archived the Food
                 this.chefService.foodsFoodIdDelete(this.food.foodItem.id, true).subscribe(complete => {
-                  this.openSnackBar('Food succefully archived!', 'ok', true);
+                  this.openSnackBar('Food succefully archived!', 'ok', 1);
                   this.foodRefresh.emit(); // Refresh the list of Foods after Archived
                 }, error => {
-                  this.openSnackBar('Food cannot be archived!', 'ok', false);
+                  this.openSnackBar('Food cannot be archived!', 'ok', 2);
                 });
               } else {
                 this.editing = false;
@@ -157,12 +159,48 @@ export class FoodComponent implements OnInit {
     this.food.foodItem = food;
     //this.food.foodItem.price = Number(this.decpipe.transform(this.food.foodItem.price, '1.2-2'));
     if (this.flagClone) {
-      this.openSnackBar('Food clone succefully created!', 'ok', true);
+      this.openSnackBar('Food clone succefully created!', 'ok', 1);
       this.flagClone = false;
     } else {
-      this.openSnackBar('Food succefully updated!', 'ok', true);
+      this.openSnackBar('Food succefully updated!', 'ok', 1);
     }
     this.foodRefresh.emit(); // Refresh the list of Foods after edit
+  }
+
+  public setFoodAsStandard(event){
+
+    
+    this.showSpinner = true;
+    this.chefService.foodsFoodIdGet(this.food.foodItem.id, 'editable').subscribe(foodEditable => {
+
+      if(foodEditable.foodItem.standard != this.food.foodItem.standard){
+        this.openSnackBar('Food already changed!', 'ok', 2);
+        this.food.foodItem = foodEditable.foodItem;
+        this.food.lastEdit = foodEditable.lastEdit; 
+        return;
+      }
+       
+      let editedFood: remote.EditedFood= this.food.foodItem;
+      let val = !foodEditable.foodItem.standard;
+
+      editedFood.lastEdit = foodEditable.lastEdit;
+      editedFood.standard = val;        
+      
+      this.chefService.foodsFoodIdPut(this.food.foodItem.id, editedFood, false).subscribe(foodDetails => {
+        this.food.foodItem.standard = val;
+        this.openSnackBar('Food succefully edited!', 'ok', 1);
+      }, error => {
+        console.log(error);
+        this.openSnackBar('Food cannot be edited!', 'ok', 2);
+        this.showSpinner = false;
+      },
+        () => {
+          this.showSpinner = false; 
+        });
+    });
+ 
+
+
   }
 
 }
@@ -172,7 +210,7 @@ export class FoodComponent implements OnInit {
   templateUrl: './food-dialog.component.html',
 })
 export class EditCloneDialogComponent {
-  constructor(public dialogRef: MdDialogRef<EditCloneDialogComponent>) { }
+  constructor(public dialogRef: MatDialogRef<EditCloneDialogComponent>) { }
 
 }
 
@@ -181,7 +219,7 @@ export class EditCloneDialogComponent {
   templateUrl: './food-delete-ask-dialog.component.html',
 })
 export class DeleteAskDialogComponent {
-  constructor(public deleteAskRef: MdDialogRef<DeleteAskDialogComponent>) { }
+  constructor(public deleteAskRef: MatDialogRef<DeleteAskDialogComponent>) { }
 
 }
 
@@ -190,7 +228,7 @@ export class DeleteAskDialogComponent {
   templateUrl: './food-delete-dialog.component.html',
 })
 export class DeleteDialogComponent {
-  constructor(public deleteRef: MdDialogRef<DeleteDialogComponent>) { }
+  constructor(public deleteRef: MatDialogRef<DeleteDialogComponent>) { }
 }
 
 

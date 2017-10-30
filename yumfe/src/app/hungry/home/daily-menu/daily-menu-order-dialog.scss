@@ -1,11 +1,15 @@
 .dialog{
-  height: 550px;
+  max-height: 800px;
   width: 420px;
+}
+.foodList{
+  max-height: 315px;
+  overflow: auto;
+  padding: 10px 0px 0px 0px;
 }
 .order{
   width: 370px;
   margin: 0 auto;
-  font-family:'Roboto Slab', serif;
 }
 img{
   width: 182px;
@@ -19,6 +23,7 @@ img{
 .food{
   padding: 15px 0 15px 0;
   border-bottom: 1px solid red;
+  >div{ padding:2px 4px;}
 }
 .total{
   padding: 15px 0 15px 0;
@@ -40,3 +45,7 @@ img{
 .right-align{
   text-align: right !important;
 }
+
+.full-width{width:100%;}
+
+.paddRight { padding-right: 5px; }

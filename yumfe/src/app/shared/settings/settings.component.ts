@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import * as remote from '../../remote';
-import { MdSnackBar, MdDialog, MdDialogRef } from '@angular/material';
+import { MatSnackBar, MatDialog, MatDialogRef } from '@angular/material';
 import { AuthenticationService } from '../authentication.service';
 import { FormBuilder, FormGroup, FormControl, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -20,6 +20,12 @@ export class SettingsComponent implements OnInit {
   private initialEmail: string;
   private initialFirstName: string;
   private initialLastName = '';//: string;
+  private initialOrderNtf: boolean;
+  private initialOrderModifyNtf: boolean;
+  private initialAdminOrderNtf: boolean;
+  private initialAdminOrderModifyNtf: boolean;
+  private initialBalanceNtf: boolean;
+
   // private initialRole: string;
   // Flag for refreshing inputs after 409 error
   public change = false;
@@ -29,17 +35,14 @@ export class SettingsComponent implements OnInit {
   public externalAuth: Boolean = false;
 
   constructor(private authService: AuthenticationService, private hungryService: remote.HungryApi, private fb: FormBuilder,
-    public snackBar: MdSnackBar, private router: Router) { }
+    public snackBar: MatSnackBar, private router: Router) { }
 
   ngOnInit() {
-    if(!this.authService.getLoggedInUser()){ return; }
+    if(!this.authService.getLoggedInUser()) { return; }
     this.userId =   this.authService.getLoggedInUser().id;
-    //const emailPattern = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 
-    const emailPattern = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,20}$/;
 
     this.externalAuth = this.authService.hasExternalAuth();
-    //console.log("settings auth:" + this.externalAuth);
 
 
     this.profileGroup = this.fb.group({
@@ -48,9 +51,14 @@ export class SettingsComponent implements OnInit {
       lastName: ['', [Validators.required, Validators.minLength(1)]],
       email: ['', [
         Validators.required, Validators.minLength(2),
-        Validators.pattern(emailPattern)
+        Validators.email
       ]
       ],
+      orderNtf: new FormControl(),
+      orderModifyNtf: new FormControl(),
+      adminOrderNtf: new FormControl(),
+      adminOrderModifyNtf: new FormControl(),
+      balanceNtf: new FormControl(),
       password: ['', [ //, disabled: this.externalAuth
 
         // tslint:disable-next-line:max-line-length
@@ -65,8 +73,10 @@ export class SettingsComponent implements OnInit {
       ],
     });
 
+
     // load user
     this.loadUser();
+
   }
 
   // Custom validator for password and confirm password
@@ -99,16 +109,26 @@ export class SettingsComponent implements OnInit {
       this.initialEmail = user.email;
       this.initialFirstName = user.firstName;
       this.initialLastName = user.lastName;
+      this.initialOrderNtf = user.orderNtf;
+      this.initialOrderModifyNtf = user.orderModifyNtf;
+      this.initialAdminOrderNtf = user.adminOrderNtf;
+      this.initialAdminOrderModifyNtf = user.adminOrderModifyNtf;
+      this.initialBalanceNtf = user.balanceNtf;
       // this.initialRole = user.role;
       // this.profileGroup.controls.role.patchValue(user.role);
       this.profileGroup.controls.firstName.patchValue(user.firstName);
       this.profileGroup.controls.lastName.patchValue(user.lastName);
       this.profileGroup.controls.email.patchValue(user.email);
+      this.profileGroup.controls.orderNtf.patchValue(user.orderNtf);
+      this.profileGroup.controls.orderModifyNtf.patchValue(user.orderModifyNtf);
+      this.profileGroup.controls.adminOrderNtf.patchValue(user.adminOrderNtf);
+      this.profileGroup.controls.adminOrderModifyNtf.patchValue(user.adminOrderModifyNtf);
+      this.profileGroup.controls.balanceNtf.patchValue(user.balanceNtf);
       this.profileGroup.get('password');
 
       this.setupForm();
 
-    }, error => { }); //console.log(error));
+    }, error => { });
 
   }
 
@@ -133,7 +153,12 @@ export class SettingsComponent implements OnInit {
   // if changes of initial values enable 'Save changes' button
   public detectChanges() {
     if ((this.user.firstName !== this.initialFirstName) || (this.user.lastName !== this.initialLastName) ||
-      (this.user.email !== this.initialEmail) || (this.profileGroup.controls.password.value !== '')) {
+      (this.user.email !== this.initialEmail) || (this.profileGroup.controls.orderNtf.value !== this.initialOrderNtf) ||
+      (this.profileGroup.controls.orderModifyNtf.value !== this.initialOrderModifyNtf) ||
+      (this.profileGroup.controls.adminOrderNtf.value !== this.initialAdminOrderNtf) ||
+      (this.profileGroup.controls.adminOrderModifyNtf.value !== this.initialAdminOrderModifyNtf) ||
+      (this.profileGroup.controls.balanceNtf.value !== this.initialBalanceNtf) ||
+      (this.profileGroup.controls.password.value !== '')) {
       return true;
     } else {
       return false;
@@ -171,6 +196,17 @@ export class SettingsComponent implements OnInit {
     userSettings.email = this.user.email;
     userSettings.lastEdit = this.user.lastEdit;
     userSettings.password = this.profileGroup.controls.password.value;
+    userSettings.orderNtf = this.profileGroup.controls.orderNtf.value;
+    userSettings.orderModifyNtf = this.profileGroup.controls.orderModifyNtf.value;
+    userSettings.adminOrderNtf = this.profileGroup.controls.adminOrderNtf.value;
+    userSettings.adminOrderModifyNtf = this.profileGroup.controls.adminOrderModifyNtf.value;
+    userSettings.balanceNtf = this.profileGroup.controls.balanceNtf.value;
+
+    this.user.orderNtf = this.profileGroup.controls.orderNtf.value;
+    this.user.orderModifyNtf = this.profileGroup.controls.orderModifyNtf.value;
+    this.user.adminOrderNtf = this.profileGroup.controls.adminOrderNtf.value;
+    this.user.adminOrderModifyNtf = this.profileGroup.controls.adminOrderModifyNtf.value;
+    this.user.balanceNtf = this.profileGroup.controls.balanceNtf.value;
 
     this.showSpinner = true;
     this.hungryService.settingsPut(userSettings)
@@ -201,10 +237,20 @@ export class SettingsComponent implements OnInit {
             this.user.role = newUserVersion.role.toLowerCase();
             this.user.approved = newUserVersion.approved;
             this.user.lastEdit.version = newUserVersion.lastEdit.version;
+            this.profileGroup.controls.orderNtf.patchValue(newUserVersion.orderNtf);
+            this.profileGroup.controls.orderModifyNtf.patchValue(newUserVersion.orderModifyNtf);
+            this.profileGroup.controls.adminOrderNtf.patchValue(newUserVersion.adminOrderNtf);
+            this.profileGroup.controls.adminOrderModifyNtf.patchValue(newUserVersion.adminOrderModifyNtf);
+            this.profileGroup.controls.balanceNtf.patchValue(newUserVersion.balanceNtf);
             //Refresh initial values
             this.initialEmail = newUserVersion.email;
             this.initialFirstName = newUserVersion.firstName;
             this.initialLastName = newUserVersion.lastName;
+            this.initialOrderNtf = newUserVersion.orderNtf;
+            this.initialOrderModifyNtf = newUserVersion.orderModifyNtf;
+            this.initialAdminOrderNtf = newUserVersion.adminOrderNtf;
+            this.initialAdminOrderModifyNtf = newUserVersion.adminOrderModifyNtf;
+            this.initialBalanceNtf = newUserVersion.balanceNtf;
             // this.initialRole = newUserVersion.role.toLowerCase();
             this.change = !this.change;
             this.openSnackBar('Your settings have been previously modified. The newest version is now displayed in the form', 'ok', 2);
@@ -218,7 +264,7 @@ export class SettingsComponent implements OnInit {
 
 
         }
-        //console.log(error);
+
       }
       );
 

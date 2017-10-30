@@ -1,6 +1,6 @@
 import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { MdSnackBar } from '@angular/material';
+import { MatSnackBar, MatSlideToggleChange } from '@angular/material';
 import { Observable } from 'rxjs/Rx';
 import * as remote from '../../../remote';
 import { GlobalSettingsService } from '../../../shared/services/global-settings-service.service';
@@ -14,7 +14,7 @@ import { GlobalSettingsService } from '../../../shared/services/global-settings-
 
 export class FoodEditComponent implements OnInit {
 
-  @Input() public foodDetails: remote.FoodDetails = {};
+  private foodDetails: remote.FoodDetails = {  };
   @Output() foodCreated = new EventEmitter();
   public foodTypesForm: Array<string>;
   // form
@@ -35,7 +35,7 @@ export class FoodEditComponent implements OnInit {
 
   constructor(
     public chefService: remote.ChefApi,
-    public snackBar: MdSnackBar,
+    public snackBar: MatSnackBar,
     private gss: GlobalSettingsService
     ) { }
 
@@ -49,10 +49,11 @@ export class FoodEditComponent implements OnInit {
       foodName: new FormControl('', [Validators.required, Validators.minLength(2), Validators.maxLength(100), Validators.pattern('.*[^ ].*')]),
       foodType: new FormControl('', Validators.required),
       description: new FormControl('', Validators.maxLength(250)),
-      price: new FormControl('', [Validators.required, Validators.maxLength(10), Validators.pattern('^([1-9]*[1-9][0-9]*(\.[0-9]+)?|[0]+\.[0-9]*[1-9][0-9]*)$')])
+      price: new FormControl('', [Validators.required, Validators.maxLength(10), Validators.pattern('^([1-9]*[1-9][0-9]*(\.[0-9]+)?|[0]+\.[0-9]*[1-9][0-9]*)$')]),
+      standard: new FormControl('')
     });
 
-
+    // this.food.get('standard').setValue(false);
   }
 
   // method for count how many chars is remaning for the description
@@ -69,6 +70,7 @@ export class FoodEditComponent implements OnInit {
     this.showForm = false;
     setTimeout(() => {
       this.food.reset({ description: '' });
+      this.characterleft = this.maxlength;
       this.showForm = true;
     });
   }
@@ -76,10 +78,16 @@ export class FoodEditComponent implements OnInit {
   createFood() {
 
     this.showSpinner = true;
-    this.clearForm();
 
-    this.chefService.foodsPost(this.food.value).subscribe(foodDetails => {
 
+    this.foodDetails.description = this.food.get('description').value;
+    this.foodDetails.foodName = this.food.get('foodName').value;
+    this.foodDetails.foodType = this.food.get('foodType').value;
+    this.foodDetails.price = this.food.get('price').value;
+    if(!this.foodDetails.standard ){
+      this.foodDetails.standard =false;
+    }
+    this.chefService.foodsPost(this.foodDetails).subscribe(foodDetails => {
       this.foodCreated.emit(this.foodDetails);
       this.openSnackBar('Food succefully created!', 'ok', true);
     }, error => {
@@ -88,8 +96,10 @@ export class FoodEditComponent implements OnInit {
       this.showSpinner = false;
     },
       () => {
+        this.clearForm();
         this.showSpinner = false;
       });
+
 
   }
 
@@ -124,5 +134,7 @@ export class FoodEditComponent implements OnInit {
 
   }
 
-
+  public setAsStandardFood(val: MatSlideToggleChange){
+    this.foodDetails.standard = val.checked;
+  }
 }

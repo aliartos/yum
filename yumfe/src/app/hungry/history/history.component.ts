@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import * as remote from '../../remote';
-import { MdButtonModule } from '@angular/material';
+import { MatButtonModule } from '@angular/material';
 import { CalendarEvent, CalendarEventAction, CalendarEventTimesChangedEvent } from 'angular-calendar';
 
 import { subDays, addDays, startOfMonth, endOfMonth, getMonth, getYear, isToday, isValid } from 'date-fns';
@@ -15,12 +15,22 @@ import { MonthNavComponent } from '../../shared/header/month-nav/month-nav.compo
 import { Observable } from 'rxjs/Rx';
 import { GlobalSettingsService } from '../../shared/services/global-settings-service.service';
 import { ControlUserService } from '../../shared/services/control-user.service';
+import { trigger, animate, style, group, animateChild, query, stagger, transition, keyframes, state } from '@angular/animations';
 
 @Component({
   selector: 'app-hungry-history',
   templateUrl: './history.component.html',
-  styleUrls: ['./history.component.scss']
-
+  styleUrls: ['./history.component.scss'],
+  animations: [
+    trigger('flyInHistory', [
+      transition('void => *', [
+        query(':enter .animateShow', [
+          style({}),
+          animate('0.5s ease-in-out', keyframes([
+            style({ opacity: 0, offset: 0 }),
+            style({ opacity: 1, offset: 1.0 })
+          ]))], { optional: true }),
+      ])])]
 })
 
 export class HistoryComponent implements OnInit, OnDestroy {
@@ -63,10 +73,10 @@ export class HistoryComponent implements OnInit, OnDestroy {
     private controlUserService: ControlUserService
   ) { }
 
-  ngOnInit() { 
+  ngOnInit() {
 
     //admin
-    this.controlUserService.getUser().subscribe(user=>{
+    this.controlUserService.getUser().subscribe(user => {
       this.controlledUser = user;
     });
 
@@ -83,7 +93,7 @@ export class HistoryComponent implements OnInit, OnDestroy {
     this.sub = this.route.params.subscribe(params => {
       let dt = new Date(+params['year'], +params['month'] - 1, 1, 0, 0, 0); // (+) converts string 'year' na d 'month' to a number
 
-      if (isValid(dt)) { 
+      if (isValid(dt)) {
         this.viewdate = dt;
         this.getRemoteDailyMenus(this.buildMonthYear(this.viewdate));
       }
@@ -91,11 +101,11 @@ export class HistoryComponent implements OnInit, OnDestroy {
     });
 
     if (isToday(this.viewdate)) {
-      this.remote = this.hungryService.menusMonthlyGet(this.controlledUser? this.controlledUser.id: null)
+      this.remote = this.hungryService.menusMonthlyGet(this.controlledUser ? this.controlledUser.id : null)
         .finally(() => { this.showSpinner = false; })
-        .subscribe(dailymenus => { 
+        .subscribe(dailymenus => {
           this.dailymenus = dailymenus;
-          this.setDailyMenusMap(); 
+          this.setDailyMenusMap();
         }, error => console.log(error));
     }
 
@@ -108,9 +118,9 @@ export class HistoryComponent implements OnInit, OnDestroy {
 
   private getRemoteDailyMenus(monthYear: string) {
 
-    this.remote = this.hungryService.menusMonthlyMonthyearGet(monthYear, this.controlledUser? this.controlledUser.id: null)
+    this.remote = this.hungryService.menusMonthlyMonthyearGet(monthYear, this.controlledUser ? this.controlledUser.id : null)
       .finally(() => { this.showSpinner = false; })
-      .subscribe(dailymenus => { 
+      .subscribe(dailymenus => {
         this.dailymenus = dailymenus;
         this.setDailyMenusMap();
       }, error => console.log(error));
@@ -127,7 +137,7 @@ export class HistoryComponent implements OnInit, OnDestroy {
       let dtStr = this.datePipe.transform(dt, 'yyyy-MM-dd');
 
       this.dailymenusMap.set(dtStr, this.dailymenus[i]);
-    } 
+    }
   }
 
   getDailyMenusMap() {
@@ -144,11 +154,13 @@ export class HistoryComponent implements OnInit, OnDestroy {
 
   getTotal() {
     this.totalSum = 0;
-    if (this.dailymenus !== undefined) {
+    if (this.dailymenus) {
       for (let dm of this.dailymenus) {
-        for (let foodItem of dm.foods)
-          //this.total += this.dailyMenu.foods[i].quantity * this.dailyMenu.foods[i].food.price;
-          this.totalSum += foodItem.quantity * foodItem.food.price;
+        if (dm.foods) {
+          for (let foodItem of dm.foods)
+            //this.total += this.dailyMenu.foods[i].quantity * this.dailyMenu.foods[i].food.price;
+            this.totalSum += foodItem.quantity * foodItem.food.price;
+        }
       }
     }
     return this.totalSum;

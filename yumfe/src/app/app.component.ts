@@ -1,32 +1,38 @@
 import { Component, Inject } from '@angular/core';
 import { AuthenticationService } from './shared/authentication.service';
+import { BalanceService } from './shared/services/balance.service';
 import { HttpSubjectService } from './shared/services/httpSubject.service';
-import { MdDialog, MdDialogRef, MD_DIALOG_DATA } from '@angular/material';
+import { MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { Router } from '@angular/router';
-import { MdSnackBar } from '@angular/material';
+import { MatSnackBar } from '@angular/material';
 import * as remote from './remote';
 
 import { LoginComponent } from './anon/login/login.component';
+import { environment } from '../environments/environment';
 
 @Component({
     selector: 'app-root',
     templateUrl: './app.component.html',
     styleUrls: ['./app.component.scss']
 })
-export class AppComponent {
-
+export class AppComponent { 
     public dialogOpen: Boolean = false;
 
     constructor(
         private authService: AuthenticationService, private httpSubjectService: HttpSubjectService,
-        public dialog: MdDialog, private router: Router,
+        private balanceService: BalanceService,
+        public dialog: MatDialog, private router: Router,
         public hugryService: remote.HungryApi,
-        public snackBar: MdSnackBar
+        public snackBar: MatSnackBar
     ) { }
 
     ngOnInit(): void {
+
+        console.log("YUM, version: "+environment.version);
+
         this.authService.bootstrapUser();
 
+        //Listen for auth expired errors
         this.httpSubjectService.http401Subject.subscribe({
             next: (error: any) => {
                 console.log(error);
@@ -49,18 +55,28 @@ export class AppComponent {
         });
 
 
+        //Refresh token after every call
         this.httpSubjectService.httpCallSubject.subscribe(
             (url: string) => {
                 if (this.authService.isLogged()) {
                     if (!/refreshToken$/.test(url)) {
-                        this.hugryService.refreshTokenGet().subscribe(token => {
-                            if (token) this.authService.refreshToken(token);
+                        this.hugryService.refreshTokenGet().subscribe(refresh => {
+                          const token = refresh.token;
+                          if (token) {
+                            this.authService.refreshToken(token)
+                          }
+                          const balance = refresh.balance;
+                          if (balance == null) {
+                            this.balanceService.updateBalance(0);
+                          }
+                          this.balanceService.updateBalance(balance);
                         });
                     }
                 }
             }
         );
 
+        //Handle http errors
         this.httpSubjectService.httpErrorSubject.subscribe(
             (result: string) => {
                   this.snackBar.open("Server or network error, please try again later", "OK", {
@@ -79,12 +95,12 @@ export class AppComponent {
 
 export class DialogLogin {
     disableRoute: Boolean = true;
-    constructor(public dialogRef: MdDialogRef<DialogLogin>) {
+    constructor(public dialogRef: MatDialogRef<DialogLogin>) {
         this.disableRoute = true;
-        console.log("login started");
+        //console.log("login started");
     }
     public loginOk(event) {
-        console.log("login closed");
+        //console.log("login closed");
         this.dialogRef.close();
     }
 }

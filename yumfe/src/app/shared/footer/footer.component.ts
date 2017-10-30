@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { MdDialog, MdDialogRef } from '@angular/material';
+import { MatDialog, MatDialogRef } from '@angular/material';
 import { TabsComponent } from './tabs/tabs.component';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-footer',
@@ -9,9 +10,11 @@ import { TabsComponent } from './tabs/tabs.component';
 })
 export class FooterComponent implements OnInit {
 
-  constructor(public dialog: MdDialog) { }
+  constructor(public dialog: MatDialog) { }
+  public version: string;
 
   ngOnInit() {
+    this.version = "Version: " + environment.version;
   }
 
   public openDialog(tabNumber) {
@@ -28,5 +31,5 @@ export class FooterComponent implements OnInit {
 })
 export class TermsDialog {
   public tabNumber = 0;
-  constructor(public dialogRef: MdDialogRef<TermsDialog>) { }
+  constructor(public dialogRef: MatDialogRef<TermsDialog>) { }
 }
