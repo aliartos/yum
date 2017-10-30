@@ -11,6 +11,7 @@ import { GlobalSettingsService } from '../../shared/services/global-settings-ser
 import { Observable, Subject } from 'rxjs/Rx';
 import { ControlUserService } from '../../shared/services/control-user.service';
 import { trigger, animate, style, group, animateChild, query, stagger, transition, keyframes, state } from '@angular/animations';
+import * as moment from 'moment';
 
 interface observables {
   wdays: any, controlledUser: any
@@ -52,8 +53,10 @@ interface dailyMenuData { price: number, comment: string };
     ])
   ]
 })
+
 export class HomeComponent implements OnInit, OnDestroy {
   protected dailymenus: Array<remote.DailyMenu>;
+  protected utcDate: Date = new Date();
   protected date: Date = new Date();
   public monthDate: Date = new Date();
   public weekDays: Array<string> = [];
@@ -81,6 +84,14 @@ export class HomeComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit() {
+
+    //utcDate : builds weekly calendar based on current utc day, server sends this calendar menu days by default (this.hungryService.menusWeeklyGet)
+    var utcMoment = moment.utc();
+    var offset= moment().utcOffset();
+    var dtsr= utcMoment.subtract(offset, 'minutes').format( );
+    this.utcDate = new Date( dtsr );
+    this.date = new Date();
+
     this.currency = this.globalSettingsService.getCurrency();
     this.deadline = this.globalSettingsService.getDeadLine();
     this.notes = this.globalSettingsService.getNotes();
@@ -112,7 +123,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   public setup() {
 
     this.sub = this.route.params.subscribe(params => {
-      let dt = new Date(+params['year'], 1, 1); // (+) converts string 'year' na d 'month' to a number
+      let dt = new Date(+params['year'], 1, 1); // (+) converts string 'year'  to a number
       dt = setISOWeek(dt, +params['week']);
       if (isValid(dt)) {
         dt = addDays(dt, 1);
@@ -133,8 +144,8 @@ export class HomeComponent implements OnInit, OnDestroy {
 
     if (isToday(this.date)) {
       this.showLoadSpinner = true;
-      this.monthDate = this.date;
-      this.weekDaysCal(startOfWeek(this.date, { weekStartsOn: 1 }));
+      this.monthDate = this.utcDate;
+      this.weekDaysCal(startOfWeek(this.utcDate, { weekStartsOn: 1 }));
       this.hungryService.menusWeeklyGet(this.controlledUser ? this.controlledUser.id : null).subscribe(dailymenus => {
         this.showLoadSpinner = false;
         this.dailymenus = dailymenus;
@@ -176,12 +187,10 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   private weekDaysCal(d: Date) {
-    this.weekDays = [];
-
+    this.weekDays = []; 
+     
     for (let i = 0; i < 7; i++) {
-
-      const dtStr = this.datePipe.transform(d, 'yyyy-MM-dd');
-
+      const dtStr = this.datePipe.transform(d, 'yyyy-MM-dd'); 
       if (this.workingDays.includes(d.getDay())) {
         this.weekDays.push(dtStr);
       }
@@ -195,10 +204,13 @@ export class HomeComponent implements OnInit, OnDestroy {
   private weekMenuMap() {
     this.dailymenusMap.clear();
     for (let i = 0; i < this.dailymenus.length; i++) {
-      const dt = new Date(this.dailymenus[i].date);
-      const dtStr = this.datePipe.transform(dt, 'yyyy-MM-dd');
+      // const dt = new Date(this.dailymenus[i].date);
+      // const dtStr = this.datePipe.transform(dt, 'yyyy-MM-dd');
+      let dt = moment.utc(this.dailymenus[i].date);
+      let dtStr = dt.format("YYYY-MM-DD");
       this.dailymenusMap.set(dtStr, this.dailymenus[i]);
     }
+    console.log(this.dailymenusMap);
   }
 
   public getDailyMenusMap() {
@@ -264,7 +276,10 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   public formattedDay(day: string): string {
-    const date = new Date(day);
+    
+    var utcMoment = moment.utc(day);
+    var offset= moment().utcOffset();
+    const date = new Date(utcMoment.utc().subtract(offset, 'minutes').format(  ));
     return (this.datePipe.transform(date, 'EEEE / d MMM'));
   }
 

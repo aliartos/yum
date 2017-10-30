@@ -5,7 +5,7 @@ import { Location } from '@angular/common';
 import { MatSnackBar, MatProgressBar, MatDialog, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material';
 import { CalendarEvent, CalendarEventAction, CalendarEventTimesChangedEvent } from 'angular-calendar';
 import { subDays, addDays, startOfMonth, endOfMonth, getMonth, getYear, isToday, isValid } from 'date-fns';
-
+import * as moment from 'moment';
 
 
 import * as models from './../../shared/models';
@@ -160,10 +160,12 @@ export class MenusComponent implements OnInit {
     this.menus = menus;
 
     for (let i = 0; i < this.menus.length; i++) {
-      let dt = new Date(this.menus[i].date);
-      dt.setHours(0, 0, 0, 0);
-      let dtStr = this.datePipe.transform(dt, 'yyyy-MM-dd');
-
+     
+      //let dt = new Date(this.menus[i].date);
+      //dt.setHours(0, 0, 0, 0);
+      //let dtStr = this.datePipe.transform(dt, 'yyyy-MM-dd');
+      let dt = moment.utc(this.menus[i].date);
+      let dtStr = dt.format("YYYY-MM-DD");
       this.menusMap.set(dtStr, this.menus[i]);
     }
     console.log("menus map:", this.menusMap);
