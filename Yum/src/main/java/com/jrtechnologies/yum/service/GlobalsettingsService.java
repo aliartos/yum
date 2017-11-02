@@ -31,11 +31,13 @@ import com.jrtechnologies.yum.data.entity.Settings;
 import com.jrtechnologies.yum.data.repository.DailyMenuRepository;
 import com.jrtechnologies.yum.data.repository.HolidaysRepository;
 import com.jrtechnologies.yum.data.repository.SettingsRepository;
+import com.jrtechnologies.yum.data.repository.UserRepository;
 import org.joda.time.Days;
 import org.joda.time.LocalDate;
 import org.joda.time.LocalDateTime;
 import org.joda.time.LocalTime;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 @javax.annotation.Generated(value = "io.swagger.codegen.languages.SpringCodegen", date = "2017-04-20T10:12:43.892+03:00")
@@ -61,11 +63,17 @@ public class GlobalsettingsService {
     @Autowired
     HolidaysRepository holidaysRepo;
 
+    @Autowired
+    private UserRepository userRep;
+
     LocalDateAttributeConverter sqlToJodaDateConverter = new LocalDateAttributeConverter();
 
     public GlobalSettings globalsettingsGet() throws ApiException {
         GlobalSettings globalSettings = new GlobalSettings();
         Settings settings = settingsRepo.findById(1);
+
+        com.jrtechnologies.yum.data.entity.User sourceUser = userRep
+        .findById((Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal());
 
         globalSettings.setCurrency(settings.getCurrency());
         globalSettings.setDeadline(settings.getDeadline().toString());
@@ -76,7 +84,12 @@ public class GlobalsettingsService {
         globalSettings.setLastEdit(lastEdit);
         globalSettings.setNotes(settings.getNotes());
         globalSettings.setPolicy(settings.getPolicy());
-        globalSettings.setReportEmail(settings.getReportEmail());
+
+        //Sensitive info
+        if(sourceUser.getUserRole().toString().equalsIgnoreCase("admin")){
+            globalSettings.setReportEmail(settings.getReportEmail());
+        }
+        
         globalSettings.setTos(settings.getTos());
         globalSettings.setWorkingDays(settings.getWorkingDays());
 
