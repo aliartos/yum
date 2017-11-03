@@ -20,7 +20,10 @@ import com.jrtechnologies.yum.api.ExceptionControllerAdvice;
 import com.jrtechnologies.test.MockAuthRule;
 import com.jrtechnologies.test.annotation.WithMockAuth;
 import com.jrtechnologies.yum.data.entity.Settings;
+import com.jrtechnologies.yum.data.entity.User;
+import com.jrtechnologies.yum.data.enums.UserRole;
 import com.jrtechnologies.yum.data.repository.SettingsRepository;
+import com.jrtechnologies.yum.data.repository.UserRepository;
 import com.jrtechnologies.yum.service.GlobalsettingsService;
 import static org.hamcrest.Matchers.is;
 import org.joda.time.DateTime;
@@ -64,6 +67,9 @@ public class GlobalsettingsApiControllerTest
     @Mock
     private SettingsRepository mockSettingsRepository;
 
+    @Mock
+    private UserRepository mockUserRepository;
+        
     private MockMvc mockMvc;
     
     public GlobalsettingsApiControllerTest()
@@ -87,7 +93,7 @@ public class GlobalsettingsApiControllerTest
     }
     
     private static Settings mockSettings;
-    
+    private static User mockUser;
     
     @BeforeClass
     public static void initMock()
@@ -101,6 +107,9 @@ public class GlobalsettingsApiControllerTest
         mockSettings.setPolicy("Some policy");
         mockSettings.setTos("Some terms of service");
         mockSettings.setVersion(0);
+        
+        mockUser = new User();
+        mockUser.setUserRole(UserRole.ADMIN);
     }
     
     @After
@@ -117,6 +126,7 @@ public class GlobalsettingsApiControllerTest
     {
         
         given(mockSettingsRepository.findById(1)).willReturn(mockSettings);
+        given(mockUserRepository.findById(1)).willReturn(mockUser);
         
         mockMvc.perform(get("/api/globalsettings"))
                 .andExpect(status().isOk())

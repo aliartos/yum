@@ -17,11 +17,11 @@ package com.jrtechnologies;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.SignatureException;
+import io.jsonwebtoken.SignatureException; 
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Calendar;
-import java.util.Date;
-import javax.annotation.PostConstruct;
+import java.util.Date; 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -35,8 +35,12 @@ public class JwtCodec {
         JwtCodec.applicationProperties = applicationProperties;
     }
 
-    private static String key = "dArg!@SFst3t32(35&t%v4[124v45@#2fhjpIy";
+    private static String secretkey = "dArg!@SFst3t32(35&t%v4[124v45@#2fhjpIy";
 
+    private static String base64Encode(String key) {
+        return  Base64.getEncoder().encodeToString(key.getBytes());        
+    }
+    
 
     public static String encode(String subject, ArrayList<String> roles) {
         // prepare expiration date according to application properties
@@ -60,11 +64,11 @@ public class JwtCodec {
         expDate = calendar.getTime();
 
         return Jwts.builder().setSubject(subject).claim("roles", roles).setIssuedAt(new Date()).setExpiration(expDate)
-                .signWith(SignatureAlgorithm.HS256, key).compact();
+                .signWith(SignatureAlgorithm.HS256, base64Encode(secretkey)).compact();
 
     }
 
     public static Claims decode(String token) throws SignatureException {
-        return Jwts.parser().setSigningKey(key).parseClaimsJws(token).getBody();
+        return Jwts.parser().setSigningKey(base64Encode(secretkey)).parseClaimsJws(token).getBody();
     }
 }
